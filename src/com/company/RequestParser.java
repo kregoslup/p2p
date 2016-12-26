@@ -1,5 +1,6 @@
 package com.company;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -12,57 +13,49 @@ import java.util.HashMap;
  * Created by krego on 07.11.2016.
  */
 class RequestParser {
-    static final int chunkSize = 102400;
+    private static final int chunkSize = 102400;
     private ObjectMapper mapper;
+    private HashMap<String, byte[]> filesMap;
+    private RequestValidator requestValidator;
 
-    RequestParser(){
+    RequestParser(HashMap<String, byte[]> filesMap){
         mapper = new ObjectMapper();
+        this.filesMap = filesMap;
+        requestValidator = new RequestValidator(filesMap);
     }
 
-/*    String prepareResponse(BufferedReader bufferedReader) throws IOException{
-        Request request = parseJSONRequest(bufferedReader);
-        System.out.println(request);
-        return request.getRequestType().toString();
-    }*/
-
-    Request parseIncomingRequest(BufferedReader bufferedReader, HashMap<String, byte[]> filesMap)
+    Request parseIncomingRequest(BufferedReader bufferedReader)
             throws IOException, RequestParseException{
         Request request = this.mapper.readValue(bufferedReader, Request.class);
-        validateRequest(request, filesMap);
+        requestValidator.validateRequest(request, filesMap, chunkSize);
+        return request;
     }
 
-    private void validateRequest(Request request, HashMap<String, byte[]> filesMap) throws RequestParseException{
-        validateDataSequence(request.getDataSequence(), request.getFileName());
-        validateFile(request.getFileName(request.getFileName(), filesMap));
-    }
+
 
     String parseOutgoingRequest(Request request,
                                 int currentPart,
                                 HostStatus status,
                                 HashMap<String, byte[]> filesMap) throws RequestParseException{
         Request response = prepareResponseMethod(request, filesMap);
-    }
-
-    private void validateFile(String fileName, HashMap<String, byte[]> filesMap) throws RequestParseException{
-        if (!filesMap.containsKey(fileName)){
+        try {
+            return mapper.writeValueAsString(response);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
             throw new RequestParseException();
         }
     }
 
-    private void validateDataSequence(long dataSequence, String fileName) throws RequestParseException{
-        long size = new File(fileName).length();
-        long availableParts = size / chunkSize;
-        if (dataSequence > availableParts){
-            throw new RequestParseException();
-        }
-    }
-
-    void setDataBase64Array(){
-        dataBase64Array = new byte[chunkSize];
+    void setDataBase64Array(Request response){
+        byte[] dataBase64Array = new byte[chunkSize];
         writeFilePart();
     }
 
-    void writeFilePart() throws FileNotFoundException {
+    long calculateOffset(long partNumber, long chunkSize){
+
+    }
+
+    void writeFilePart(String fileName, ) throws FileNotFoundException {
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
         long offset = calculateOffset();
         bis.read(dataBase64Array, offset, chunkSize);

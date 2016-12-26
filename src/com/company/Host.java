@@ -86,14 +86,14 @@ class Host implements Runnable{
 
         RequestHandler(Socket socket, HashMap<String, byte[]> filesMap){
             this.socket = socket;
-            parser = new RequestParser();
+            parser = new RequestParser(filesMap);
         }
 
         Request parseRequest() throws RequestParseException {
             BufferedReader inStream = null;
             try {
                 inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                return parser.parseIncomingRequest(inStream, filesMap);
+                return parser.parseIncomingRequest(inStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
