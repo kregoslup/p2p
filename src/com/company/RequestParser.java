@@ -1,70 +1,88 @@
 package com.company;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.*;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 
 /**
  * Created by krego on 07.11.2016.
  */
-public class RequestParser {
-    BufferedReader bufferedReader;
-    private final char METHOD_TERMINATOR = '\0';
+class RequestParser {
+    static final int chunkSize = 102400;
+    private ObjectMapper mapper;
 
-    RequestParser(BufferedReader bufferedReader){
-        this.bufferedReader = bufferedReader;
+    RequestParser(){
+        mapper = new ObjectMapper();
     }
 
-    RequestType getRequestType(){
-        StringBuilder stringBuilder = new StringBuilder();
-        readRequestPart(stringBuilder);
-        String requestType = base64Decode(stringBuilder.toString());
-        return RequestType.getRequestType(requestType);
+/*    String prepareResponse(BufferedReader bufferedReader) throws IOException{
+        Request request = parseJSONRequest(bufferedReader);
+        System.out.println(request);
+        return request.getRequestType().toString();
+    }*/
+
+    Request parseIncomingRequest(BufferedReader bufferedReader, HashMap<String, byte[]> filesMap)
+            throws IOException, RequestParseException{
+        Request request = this.mapper.readValue(bufferedReader, Request.class);
+        validateRequest(request, filesMap);
     }
 
-    private String getFilename(){
-        StringBuilder stringBuilder = new StringBuilder();
-        readRequestPart(stringBuilder);
-        return base64Decode(stringBuilder.toString());
+    private void validateRequest(Request request, HashMap<String, byte[]> filesMap) throws RequestParseException{
+        validateDataSequence(request.getDataSequence(), request.getFileName());
+        validateFile(request.getFileName(request.getFileName(), filesMap));
     }
 
-    private void readRequestPart(StringBuilder stringBuilder){
-        char c;
-        try {
-            while((c = (char)bufferedReader.read()) != METHOD_TERMINATOR){
-                stringBuilder.append(c);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    String parseOutgoingRequest(Request request,
+                                int currentPart,
+                                HostStatus status,
+                                HashMap<String, byte[]> filesMap) throws RequestParseException{
+        Request response = prepareResponseMethod(request, filesMap);
+    }
+
+    private void validateFile(String fileName, HashMap<String, byte[]> filesMap) throws RequestParseException{
+        if (!filesMap.containsKey(fileName)){
+            throw new RequestParseException();
         }
     }
 
-    private byte[] base64Decode(String encodedRequestPart){
-        Base64.Decoder decoder = Base64.getDecoder();
-        return decoder.decode(encodedRequestPart);
+    private void validateDataSequence(long dataSequence, String fileName) throws RequestParseException{
+        long size = new File(fileName).length();
+        long availableParts = size / chunkSize;
+        if (dataSequence > availableParts){
+            throw new RequestParseException();
+        }
     }
 
-    Request parseRequest(){
-        RequestType requestType = this.getRequestType();
-        return new Request(requestType, bufferedReader);
+    void setDataBase64Array(){
+        dataBase64Array = new byte[chunkSize];
+        writeFilePart();
     }
 
-    Response prepareResponse(Request request, ArrayList<String> filesMap, int currentPath, HostStatus status){
-        Response response = new Response();
-        switch(request.getRequestType()){
-            case LIST:
-                response.getFilesList(filesMap);
-            case DOWNLOAD:
-                response.sendFilePart(request);
+    void writeFilePart() throws FileNotFoundException {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+        long offset = calculateOffset();
+        bis.read(dataBase64Array, offset, chunkSize);
+    }
+
+    Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) throws RequestParseException{
+        Request response;
+        switch (request.getRequestType()){
+            case DIR:
+                response = new Request(RequestType.DIR, filesMap);
+                break;
             case MD5:
-                response.countMD5(request);
-            case ACCEPT:
-                if(status == HostStatus.SENDING){
-                    response.sendFilePart();
-                }else{
-                    break;
-                }
+                response = new Request(RequestType.MD5, request.getFileName());
+                break;
+            case DATA:
+                response = new Request(RequestType.DATA, request.getDataSequence(), request.getFileName());
+                break;
+            default:
+                response = new Request();
         }
+        return response;
     }
 }

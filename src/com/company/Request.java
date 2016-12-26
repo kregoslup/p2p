@@ -1,6 +1,7 @@
 package com.company;
 
-import java.io.BufferedReader;
+import java.io.*;
+import java.util.HashMap;
 import java.util.Optional;
 
 /**
@@ -8,19 +9,55 @@ import java.util.Optional;
  */
 class Request {
     private RequestType requestType;
-    private BufferedReader bufferedReader = null;
+    private HashMap<String, byte[]> filesMap = null;
+    private byte[] dataBase64Array = null;
+    private long dataSequence = 0;
+    private String fileName = null;
+    private String dataMD5 = null;
+    private boolean valid = true;
 
-    Request(RequestType requestType, BufferedReader bufferedReader){
+    Request(){
+        valid = false;
+    }
+
+    Request(RequestType requestType, HashMap<String, byte[]> filesMap){
         this.requestType = requestType;
-        this.bufferedReader = bufferedReader;
+        this.filesMap = filesMap;
     }
 
-    RequestType getRequestType() {
-        return requestType;
+    Request(RequestType requestType, String fileName){
+        this.requestType = requestType;
+        this.fileName = fileName;
     }
 
-    Optional getBufferedReader(){
-        return Optional.ofNullable(bufferedReader);
+    Request(RequestType requestType, long dataSequence, String fileName) throws RequestParseException{
+        this.requestType = requestType;
+        this.dataSequence = dataSequence;
+        this.fileName = fileName;
     }
 
+    RequestType getRequestType(){
+        return this.requestType;
+    }
+
+
+    void setFilesMap(HashMap<String, byte[]> filesMap){
+        this.filesMap = filesMap;
+    }
+
+    void setFileName(String fileName){
+        this.fileName = fileName;
+    }
+
+    void setDataMD5(String dataMD5){
+        this.dataMD5 = dataMD5;
+    }
+
+    String getFileName(){
+        return this.fileName;
+    }
+
+    long getDataSequence(){
+        return dataSequence;
+    }
 }
