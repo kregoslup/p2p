@@ -46,29 +46,22 @@ class RequestParser {
         }
     }
 
-    void setDataBase64Array(Request response){
-        byte[] dataBase64Array = new byte[chunkSize];
-        writeFilePart();
-    }
-
-    long calculateOffset(long partNumber, long chunkSize){
-
-    }
-
-    void writeFilePart(String fileName, ) throws FileNotFoundException {
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
-        long offset = calculateOffset();
-        bis.read(dataBase64Array, offset, chunkSize);
-    }
-
-    boolean checkMD5(String fileName, byte[] dataMD5){
-        if (filesMap.containsKey(fileName)){
-            return filesMap.get(fileName) == dataMD5;
+    private void writeFilePart(Request request) {
+        try {
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(request.getFileName()));
+            long offset = request.getDataSequence() * chunkSize;
+            int read = bis.read(request.getDataBase64Array(), (int)offset, chunkSize);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RequestParseException();
         }
-        return false;
     }
 
-    Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) throws RequestParseException{
+    private boolean checkMD5(String fileName, byte[] dataMD5) {
+        return filesMap.containsKey(fileName) && filesMap.get(fileName) == dataMD5;
+    }
+
+    Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) {
         Request response;
         switch (request.getRequestType()){
             case DIR:
@@ -80,6 +73,7 @@ class RequestParser {
                 break;
             case PULL:
                 response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
+                writeFilePart(response);
                 break;
             case PUSH:
                 response = new Request(RequestType.PUSH, request.getDataSequence(), request.getFileName());

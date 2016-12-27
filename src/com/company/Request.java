@@ -11,7 +11,7 @@ class Request {
     private RequestType requestType;
     private HashMap<String, byte[]> filesMap = null;
     private byte[] dataBase64Array = null;
-    private long dataSequence = 0;
+    private int dataSequence = 0;
     private String fileName = null;
     private byte[] dataMD5 = null;
     private boolean valid = true;
@@ -30,7 +30,7 @@ class Request {
         this.fileName = fileName;
     }
 
-    Request(RequestType requestType, long dataSequence, String fileName) throws RequestParseException{
+    Request(RequestType requestType, int dataSequence, String fileName) throws RequestParseException{
         this.requestType = requestType;
         this.dataSequence = dataSequence;
         this.fileName = fileName;
@@ -42,6 +42,10 @@ class Request {
 
     byte[] getDataMD5(){
         return dataMD5;
+    }
+
+    byte[] getDataBase64Array(){
+        return dataBase64Array;
     }
 
     RequestType getRequestType(){
@@ -64,7 +68,7 @@ class Request {
         return this.fileName;
     }
 
-    long getDataSequence(){
+    int getDataSequence(){
         return dataSequence;
     }
 }
