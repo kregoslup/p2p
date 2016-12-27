@@ -31,13 +31,13 @@ class RequestParser {
         return request;
     }
 
-
-
     String parseOutgoingRequest(Request request,
-                                int currentPart,
-                                HostStatus status,
                                 HashMap<String, byte[]> filesMap) throws RequestParseException{
         Request response = prepareResponseMethod(request, filesMap);
+        return convertResponseToString(response);
+    }
+
+    private String convertResponseToString(Request response){
         try {
             return mapper.writeValueAsString(response);
         } catch (JsonProcessingException e) {
@@ -61,6 +61,13 @@ class RequestParser {
         bis.read(dataBase64Array, offset, chunkSize);
     }
 
+    boolean checkMD5(String fileName, byte[] dataMD5){
+        if (filesMap.containsKey(fileName)){
+            return filesMap.get(fileName) == dataMD5;
+        }
+        return false;
+    }
+
     Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) throws RequestParseException{
         Request response;
         switch (request.getRequestType()){
@@ -69,12 +76,16 @@ class RequestParser {
                 break;
             case MD5:
                 response = new Request(RequestType.MD5, request.getFileName());
+                response.setValid(checkMD5(request.getFileName(), request.getDataMD5()));
                 break;
-            case DATA:
-                response = new Request(RequestType.DATA, request.getDataSequence(), request.getFileName());
+            case PULL:
+                response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
+                break;
+            case PUSH:
+                response = new Request(RequestType.PUSH, request.getDataSequence(), request.getFileName());
                 break;
             default:
-                response = new Request();
+                throw new RequestParseException();
         }
         return response;
     }

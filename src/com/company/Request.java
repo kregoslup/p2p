@@ -13,7 +13,7 @@ class Request {
     private byte[] dataBase64Array = null;
     private long dataSequence = 0;
     private String fileName = null;
-    private String dataMD5 = null;
+    private byte[] dataMD5 = null;
     private boolean valid = true;
 
     Request(){
@@ -36,10 +36,17 @@ class Request {
         this.fileName = fileName;
     }
 
+    void setValid(boolean valid){
+        this.valid = valid;
+    }
+
+    byte[] getDataMD5(){
+        return dataMD5;
+    }
+
     RequestType getRequestType(){
         return this.requestType;
     }
-
 
     void setFilesMap(HashMap<String, byte[]> filesMap){
         this.filesMap = filesMap;
@@ -49,7 +56,7 @@ class Request {
         this.fileName = fileName;
     }
 
-    void setDataMD5(String dataMD5){
+    void setDataMD5(byte[] dataMD5){
         this.dataMD5 = dataMD5;
     }
 
