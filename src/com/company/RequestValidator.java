@@ -33,4 +33,8 @@ class RequestValidator {
             throw new RequestParseException();
         }
     }
+
+    boolean checkMD5(String fileName, byte[] dataMD5) {
+        return filesMap.containsKey(fileName) && filesMap.get(fileName) == dataMD5;
+    }
 }
