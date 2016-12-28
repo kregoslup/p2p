@@ -21,13 +21,20 @@ class Host implements Runnable{
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
     private int hostNumber;
+    private boolean isListening = true;
 
-    public Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
-        serverSocket = new ServerSocket(portNumber);
+    Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
+        this.serverSocket = new ServerSocket(portNumber);
         this.hostNumber = hostNumber;
-        String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber).toString();
+        this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+        this.filesMap = new HashMap<>();
+        configureDownloadPath();
+    }
+
+    private void configureDownloadPath(){
+        String defaultPath = new StringBuilder("C:\\TORRENT_").append(this.hostNumber).toString();
         downloadPath = new File(defaultPath);
-        executorService = Executors.newFixedThreadPool(threadPoolSize);
+        discoverFiles(downloadPath);
     }
 
     private void discoverFiles(File path){
@@ -50,7 +57,7 @@ class Host implements Runnable{
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             InputStream inputStream = Files.newInputStream(Paths.get(file));
-            DigestInputStream digestInputStream = new DigestInputStream(inputStream, md);
+            new DigestInputStream(inputStream, md);
             return md.digest();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -58,9 +65,12 @@ class Host implements Runnable{
         return new byte[0];
     }
 
+    void abort(){
+        isListening = false;
+    }
+
     private void socketListeningLoop() throws IOException {
-        while(true) {
-            discoverFiles(downloadPath);
+        while(isListening) {
             executorService.submit(new RequestHandler(serverSocket.accept(), this.filesMap));
         }
     }
@@ -76,11 +86,8 @@ class Host implements Runnable{
 
     private class RequestHandler implements Runnable{
         private final Socket socket;
-        private HostStatus status = HostStatus.STARTED;
-        private int currentPart = -1;
         private boolean isConnected = true;
         private RequestParser parser;
-        private HashMap<String, byte[]> filesMap;
 
         RequestHandler(Socket socket, HashMap<String, byte[]> filesMap){
             this.socket = socket;
