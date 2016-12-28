@@ -32,9 +32,23 @@ class Host implements Runnable{
     }
 
     private void configureDownloadPath(){
+        setDownloadPath();
+        createFolderIfNotExisting();
+        discoverFiles(downloadPath);
+    }
+
+    private void setDownloadPath(){
         String defaultPath = new StringBuilder("C:\\TORRENT_").append(this.hostNumber).toString();
         downloadPath = new File(defaultPath);
-        discoverFiles(downloadPath);
+    }
+
+    private void createFolderIfNotExisting(){
+        if (!(downloadPath.exists() || downloadPath.isFile())){
+            boolean created = downloadPath.mkdir();
+            if (!created){
+                throw new Error();
+            }
+        }
     }
 
     private void discoverFiles(File path){
