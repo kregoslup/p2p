@@ -1,4 +1,4 @@
-package com.company;
+package com.server;
 
 /**
  * Created by krego on 28.12.2016.

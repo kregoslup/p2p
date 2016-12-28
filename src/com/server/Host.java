@@ -1,6 +1,4 @@
-package com.company;
-
-import sun.plugin2.message.Message;
+package com.server;
 
 import java.io.*;
 import java.net.ServerSocket;

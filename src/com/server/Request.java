@@ -1,8 +1,6 @@
-package com.company;
+package com.server;
 
-import java.io.*;
 import java.util.HashMap;
-import java.util.Optional;
 
 /**
  * Created by krego on 05.11.2016.

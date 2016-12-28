@@ -1,12 +1,9 @@
-package com.company;
+package com.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.nio.Buffer;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 
 /**
