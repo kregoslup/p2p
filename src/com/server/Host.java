@@ -99,7 +99,7 @@ class Host implements Runnable{
 
         void sendResponse(Request request) throws IOException {
             OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream());
-            String outRequest = parser.parseOutgoingRequest(request, currentPart, status, filesMap);
+            String outRequest = parser.parseOutgoingRequest(request, filesMap);
             out.write(outRequest);
         }
 
