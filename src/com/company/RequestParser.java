@@ -17,11 +17,13 @@ class RequestParser {
     private ObjectMapper mapper;
     private HashMap<String, byte[]> filesMap;
     private RequestValidator requestValidator;
+    private FileHandler fileHandler;
 
     RequestParser(HashMap<String, byte[]> filesMap){
         mapper = new ObjectMapper();
         this.filesMap = filesMap;
         requestValidator = new RequestValidator(filesMap);
+        this.fileHandler = new FileHandler(chunkSize);
     }
 
     Request parseIncomingRequest(BufferedReader bufferedReader)
@@ -46,21 +48,6 @@ class RequestParser {
         }
     }
 
-    private void writeFilePart(Request request) {
-        try {
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(request.getFileName()));
-            long offset = request.getDataSequence() * chunkSize;
-            int read = bis.read(request.getDataBase64Array(), (int)offset, chunkSize);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RequestParseException();
-        }
-    }
-
-    private boolean checkMD5(String fileName, byte[] dataMD5) {
-        return filesMap.containsKey(fileName) && filesMap.get(fileName) == dataMD5;
-    }
-
     Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) {
         Request response;
         switch (request.getRequestType()){
@@ -69,14 +56,17 @@ class RequestParser {
                 break;
             case MD5:
                 response = new Request(RequestType.MD5, request.getFileName());
-                response.setValid(checkMD5(request.getFileName(), request.getDataMD5()));
+                response.setValid(requestValidator.checkMD5(request.getFileName(), request.getDataMD5()));
                 break;
             case PULL:
+                // sciagam nie ja, ja czyli serwer wysylam
                 response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
-                writeFilePart(response);
+                response.setDataMD5(fileHandler.loadFilePart(request.getFileName(), request.getDataSequence()));
                 break;
             case PUSH:
-                response = new Request(RequestType.PUSH, request.getDataSequence(), request.getFileName());
+                // ktos mi wysyla, ja sciagam, ja serwer
+                fileHandler.writeFilePart(request.getFileName(), request.getDataBase64Array(), request.getDataSequence());
+                response = new Request(RequestType.ACK, request.getDataSequence(), request.getFileName());
                 break;
             default:
                 throw new RequestParseException();
