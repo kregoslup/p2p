@@ -14,7 +14,7 @@ class FileHandler {
       this.chunkSize = chunkSize;
    }
 
-   void writeFile(String fileName, byte[] filePart, int partNumber){
+   void writeFilePart(String fileName, byte[] filePart, int partNumber){
       RandomAccessFile randomAccessFile;
       try {
          randomAccessFile = new RandomAccessFile(fileName, WRITE);
@@ -23,7 +23,7 @@ class FileHandler {
          throw new FileWriteError();
       }
       try {
-         long offset = calculateOffset(fileName, partNumber);
+         long offset = calculateOffset(partNumber);
          randomAccessFile.seek(offset);
          randomAccessFile.write(filePart);
       } catch (IOException e) {
@@ -31,11 +31,11 @@ class FileHandler {
       }
    }
 
-   long calculateOffset(String fileName, int partNumber) throws IOException{
+   long calculateOffset(int partNumber) throws IOException{
       return partNumber * chunkSize;
    }
 
-   byte[] loadFile(String fileName, int partNumber){
+   byte[] loadFilePart(String fileName, int partNumber){
       RandomAccessFile randomAccessFile;
       try {
          randomAccessFile = new RandomAccessFile(fileName, READ);
@@ -44,7 +44,7 @@ class FileHandler {
           throw new FileWriteError();
       }
       try {
-         long offset = calculateOffset(fileName, partNumber);
+         long offset = calculateOffset(partNumber);
          byte[] filePart = new byte[chunkSize];
          randomAccessFile.seek(offset);
          randomAccessFile.read(filePart);
