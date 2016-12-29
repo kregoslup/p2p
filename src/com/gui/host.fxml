@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="List serwerów" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -13,10 +13,8 @@
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <Button layoutX="14.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="114.0" text="Nowy host" />
-                        <Button layoutX="167.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="104.0" text="Pokaz pliki" />
-                        <TextField layoutX="414.0" layoutY="15.0" />
-                        <Label alignment="CENTER_RIGHT" layoutX="323.0" layoutY="13.0" prefHeight="30.0" prefWidth="85.0" text="Numer portu:" />
+                        <Button layoutX="14.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
+                        <Button layoutX="167.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -24,8 +22,8 @@
                         <TableView layoutX="117.0" layoutY="46.0" prefHeight="293.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
                             <TableColumn prefWidth="75.0" text="ID" />
-                            <TableColumn prefWidth="244.99999237060547" text="Numer portu" />
-                              <TableColumn prefWidth="255.0" text="Status" />
+                            <TableColumn prefWidth="244.99999237060547" text="Nazwa pliku" />
+                              <TableColumn prefWidth="255.0" text="Rozmiar" />
                           </columns>
                         </TableView>
                      </children>
