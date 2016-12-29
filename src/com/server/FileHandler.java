@@ -31,7 +31,7 @@ class FileHandler {
       }
    }
 
-   long calculateOffset(int partNumber) throws IOException{
+   private long calculateOffset(int partNumber) throws IOException{
       return partNumber * chunkSize;
    }
 

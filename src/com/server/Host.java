@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by krego on 29.10.2016.
  */
-class Host implements Runnable{
+public class Host implements Runnable{
     private final ServerSocket serverSocket;
     private File downloadPath;
     private final ExecutorService executorService;

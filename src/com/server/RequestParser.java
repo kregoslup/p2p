@@ -56,7 +56,7 @@ class RequestParser {
                 response.setValid(requestValidator.checkMD5(request.getFileName(), request.getDataMD5()));
                 break;
             case PULL:
-                // sciagam nie ja, ja czyli serwer wysylam
+                // ja czyli serwer wysylam
                 response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
                 response.setDataMD5(fileHandler.loadFilePart(request.getFileName(), request.getDataSequence()));
                 break;
