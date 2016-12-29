@@ -23,7 +23,7 @@ public class Host implements Runnable{
     private int hostNumber;
     private boolean isListening = true;
 
-    Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
+    public Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
         this.serverSocket = new ServerSocket(portNumber);
         this.hostNumber = hostNumber;
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
