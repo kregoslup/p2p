@@ -2,7 +2,6 @@ package com.gui;/**
  * Created by krego on 28.12.2016.
  */
 
-import com.server.Host;
 import com.server.HostsController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -11,10 +10,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class gui extends Application {
-    private ArrayList<Host> hosts;
     private Parent root;
     private Scene scene;
 
@@ -32,15 +29,12 @@ public class gui extends Application {
         scene = new Scene(root);
         primaryStage.setScene(scene);
         configureStage(primaryStage);
+        primaryStage.show();
     }
 
     private void configureStage(Stage primaryStage){
         primaryStage.setOnCloseRequest(event -> {
-            HostsController.closeAllHosts(hosts);
+            HostsController.closeAllHosts(Context.getInstance().getHosts());
         });
-    }
-
-    void configureHosts(){
-        hosts = new ArrayList<>();
     }
 }

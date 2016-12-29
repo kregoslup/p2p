@@ -5,7 +5,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/8" fx:controller="com.gui.FilesListController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -13,8 +15,8 @@
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <Button layoutX="14.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
-                        <Button layoutX="167.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
+                        <Button fx:id="sendButton" layoutX="14.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
+                        <Button fx:id="downloadButton" layoutX="167.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
