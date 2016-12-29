@@ -1,5 +1,8 @@
 package com.server;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,7 +24,7 @@ public class Host implements Runnable{
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
     private int hostNumber;
-    private boolean isListening = true;
+    private BooleanProperty isListening = new SimpleBooleanProperty(true);
 
     public Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
         this.serverSocket = new ServerSocket(portNumber);
@@ -80,11 +83,11 @@ public class Host implements Runnable{
     }
 
     void abort(){
-        isListening = false;
+        isListening.setValue(false);
     }
 
     private void socketListeningLoop() throws IOException {
-        while(isListening) {
+        while(isListening.get()) {
             executorService.submit(new RequestHandler(serverSocket.accept(), this.filesMap));
         }
     }

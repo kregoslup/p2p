@@ -2,6 +2,8 @@ package com.gui;
 
 import com.server.Client;
 import com.server.Host;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 
@@ -16,11 +18,11 @@ public class Context {
         return instance;
     }
 
-    private ArrayList<Host> hosts = new ArrayList<>();
+    private ObservableList<Host> hosts = FXCollections.observableArrayList();
 
     private Client client = new Client();
 
-    ArrayList<Host> getHosts(){
+    ObservableList<Host> getHosts(){
         return hosts;
     }
 
