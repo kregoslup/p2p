@@ -1,7 +1,9 @@
 package com.server;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -18,17 +20,24 @@ import java.util.concurrent.Executors;
 /**
  * Created by krego on 29.10.2016.
  */
+
 public class Host implements Runnable{
+    private static int hostsCount;
     private final ServerSocket serverSocket;
     private File downloadPath;
+    public IntegerProperty portNumber;
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
-    private int hostNumber;
-    private BooleanProperty isListening = new SimpleBooleanProperty(true);
+    public IntegerProperty hostNumber;
+    private BooleanProperty hostStatus = new SimpleBooleanProperty(true);
+    public static final int MAX_PORT = 65535;
+    public static final int MIN_PORT = 49151;
 
-    public Host(int portNumber, int hostNumber, int threadPoolSize) throws IOException {
+    public Host(int portNumber, int threadPoolSize) throws IOException {
+        hostsCount += 1;
+        this.portNumber = new SimpleIntegerProperty(portNumber);
         this.serverSocket = new ServerSocket(portNumber);
-        this.hostNumber = hostNumber;
+        this.hostNumber = new SimpleIntegerProperty(hostsCount);
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
         this.filesMap = new HashMap<>();
         configureDownloadPath();
@@ -70,6 +79,7 @@ public class Host implements Runnable{
             }
         }
     }
+
     private byte[] countMD5(String file) throws IOException {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -83,11 +93,11 @@ public class Host implements Runnable{
     }
 
     void abort(){
-        isListening.setValue(false);
+        hostStatus.setValue(false);
     }
 
     private void socketListeningLoop() throws IOException {
-        while(isListening.get()) {
+        while(hostStatus.get()) {
             executorService.submit(new RequestHandler(serverSocket.accept(), this.filesMap));
         }
     }
