@@ -25,11 +25,11 @@
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TableView layoutX="117.0" layoutY="46.0" prefHeight="293.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="tableView" layoutX="117.0" layoutY="46.0" prefHeight="293.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
-                            <TableColumn prefWidth="75.0" text="ID" />
-                            <TableColumn prefWidth="244.99999237060547" text="Numer portu" />
-                              <TableColumn prefWidth="255.0" text="Status" />
+                            <TableColumn fx:id="hostNumber" prefWidth="75.0" text="ID" />
+                            <TableColumn fx:id="portNumber" prefWidth="244.99999237060547" text="Numer portu" />
+                              <TableColumn fx:id="hostStatus" prefWidth="255.0" text="Status" />
                           </columns>
                         </TableView>
                      </children>

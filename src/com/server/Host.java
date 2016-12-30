@@ -29,7 +29,7 @@ public class Host implements Runnable{
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
     public IntegerProperty hostNumber;
-    private BooleanProperty hostStatus = new SimpleBooleanProperty(true);
+    public BooleanProperty hostStatus = new SimpleBooleanProperty(true);
     public static final int MAX_PORT = 65535;
     public static final int MIN_PORT = 49151;
 
@@ -50,12 +50,12 @@ public class Host implements Runnable{
     }
 
     private void setDownloadPath(){
-        String defaultPath = new StringBuilder("C:\\TORRENT_").append(this.hostNumber).toString();
+        String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber.get()).toString();
         downloadPath = new File(defaultPath);
     }
 
     private void createFolderIfNotExisting(){
-        if (!(downloadPath.exists() || downloadPath.isFile())){
+        if (!downloadPath.exists() || downloadPath.isFile()){
             boolean created = downloadPath.mkdir();
             if (!created){
                 throw new Error();

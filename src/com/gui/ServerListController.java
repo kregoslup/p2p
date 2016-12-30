@@ -2,7 +2,7 @@ package com.gui;
 
 import com.server.Host;
 import com.server.ServerCreatingError;
-import javafx.beans.property.IntegerProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -10,10 +10,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import javafx.event.ActionEvent;
 
-import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -23,11 +21,10 @@ public class ServerListController implements Initializable{
     @FXML public Button newHostButton;
     @FXML public Button showFilesButton;
     @FXML public TextField portNumberInput;
-    @FXML private TableView<Host> tableView = new TableView<>();
+    @FXML private TableView<Host> tableView;
     @FXML private TableColumn<Host, Integer> hostNumber;
     @FXML private TableColumn<Host, Integer> portNumber;
     @FXML private TableColumn<Host, Boolean> hostStatus;
-    public static final int MAX_PORT_DIGITS = 5;
 
     private void configureInputField(){
         addTextFieldValidation();
@@ -38,34 +35,21 @@ public class ServerListController implements Initializable{
             if (!newValue.matches("\\d*")){
                 portNumberInput.setText(newValue.replaceAll("[^\\d]", ""));
             }
-            if (portNumberInput.getText().length() > ServerListController.MAX_PORT_DIGITS) {
-                String s = portNumberInput.getText().substring(0, ServerListController.MAX_PORT_DIGITS);
-                portNumberInput.setText(s);
-            }
         });
     }
 
-    private void createTable(){
-        tableView = new TableView<>();
-        hostNumber = new TableColumn<>();
-        portNumber = new TableColumn<>();
-        hostStatus = new TableColumn<>();
-    }
-
     private void setCellValueFactory(){
-        hostNumber.setCellValueFactory(new PropertyValueFactory<Host, Integer>("ID"));
-        portNumber.setCellValueFactory(new PropertyValueFactory<Host, Integer>("port number"));
-        hostStatus.setCellValueFactory(new PropertyValueFactory<Host, Boolean>("status"));
+        hostNumber.setCellValueFactory(new PropertyValueFactory<Host, Integer>("hostNumber"));
+        portNumber.setCellValueFactory(new PropertyValueFactory<Host, Integer>("portNumber"));
+        hostStatus.setCellValueFactory(new PropertyValueFactory<Host, Boolean>("hostStatus"));
     }
 
     private void configureTableView(){
-        createTable();
         setCellValueFactory();
-        tableView.getColumns().addAll(hostNumber, portNumber, hostStatus);
-        tableView.getItems().setAll(parseHostsList());
+        tableView.setItems(parseHostsList());
     }
 
-    private List<Host> parseHostsList(){
+    private ObservableList<Host> parseHostsList(){
         return Context.getInstance().getHosts();
     }
 
