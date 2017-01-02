@@ -6,16 +6,17 @@ import java.util.HashMap;
  * Created by krego on 05.11.2016.
  */
 class Request {
-    private RequestType requestType;
-    private HashMap<String, byte[]> filesMap = null;
-    private byte[] dataBase64Array = null;
-    private int dataSequence = 0;
-    private String fileName = null;
-    private byte[] dataMD5 = null;
-    private boolean valid = true;
+    public RequestType requestType;
+    public HashMap<String, byte[]> filesMap = null;
+    public byte[] dataBase64Array = null;
+    public long dataSequence = 0;
+    public long maxDataSequence = 0;
+    public String fileName = null;
+    public byte[] dataMD5 = null;
+    public boolean valid = true;
 
-    Request(){
-        valid = false;
+    Request(RequestType requestType){
+        this.requestType = requestType;
     }
 
     Request(RequestType requestType, HashMap<String, byte[]> filesMap){
@@ -28,45 +29,57 @@ class Request {
         this.fileName = fileName;
     }
 
-    Request(RequestType requestType, int dataSequence, String fileName) throws RequestParseException{
+    Request(RequestType requestType, long dataSequence, String fileName){
         this.requestType = requestType;
         this.dataSequence = dataSequence;
         this.fileName = fileName;
     }
 
-    void setValid(boolean valid){
+    Request(RequestType requestType, long dataSequence, long maxDataSequence, String fileName, byte[] dataBase64Array){
+        this.requestType = requestType;
+        this.dataSequence = dataSequence;
+        this.fileName = fileName;
+        this.dataBase64Array = dataBase64Array;
+        this.maxDataSequence = maxDataSequence;
+    }
+
+    public void setValid(boolean valid){
         this.valid = valid;
     }
 
-    byte[] getDataMD5(){
+    public byte[] getDataMD5(){
         return dataMD5;
     }
 
-    byte[] getDataBase64Array(){
+    public byte[] getDataBase64Array(){
         return dataBase64Array;
     }
 
-    RequestType getRequestType(){
+    public RequestType getRequestType(){
         return this.requestType;
     }
 
-    void setFilesMap(HashMap<String, byte[]> filesMap){
-        this.filesMap = filesMap;
-    }
-
-    void setFileName(String fileName){
-        this.fileName = fileName;
-    }
-
-    void setDataMD5(byte[] dataMD5){
+    public void setDataMD5(byte[] dataMD5){
         this.dataMD5 = dataMD5;
     }
 
-    String getFileName(){
+    public String getFileName(){
         return this.fileName;
     }
 
-    int getDataSequence(){
+    public long getDataSequence(){
         return dataSequence;
+    }
+
+    public HashMap<String, byte[]> getFilesMap() {
+        return filesMap;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public long getMaxDataSequence() {
+        return maxDataSequence;
     }
 }

@@ -1,13 +1,14 @@
-package com.server;
+package com.gui;
 
+import com.server.Host;
 import javafx.collections.ObservableList;
 
 /**
  * Created by krego on 28.12.2016.
  */
-public class HostsController {
+class HostsController {
 
-    public static void closeAllHosts(ObservableList<Host> hosts){
+    static void closeAllHosts(ObservableList<Host> hosts){
         if (!hosts.isEmpty()) {
             hosts.forEach(Host::abort);
         }

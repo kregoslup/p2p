@@ -1,6 +1,8 @@
 package com.gui;
 
+import com.server.Client;
 import com.server.Host;
+import com.server.RequestType;
 import com.server.ServerCreatingError;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -83,13 +85,13 @@ public class ServerListController implements Initializable{
     public void addNewHost(ActionEvent actionEvent) {
         if (validPortNumber()){
             try {
-                Context.getInstance()
-                        .addHost(new Host(
-                                Integer.valueOf(portNumberInput.textProperty().get()),
-                                Context.MAX_THREAD_POOL_SIZE_PER_HOST));
+                Host host = new Host(
+                        Integer.valueOf(portNumberInput.textProperty().get()),
+                        Context.MAX_THREAD_POOL_SIZE_PER_HOST);
+                Context.getInstance().addHost(host);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new ServerCreatingError();
+                throw new ServerCreatingError("Error while creating new server");
             }
         }else{
             showPortAlertError();
@@ -103,4 +105,13 @@ public class ServerListController implements Initializable{
         alert.showAndWait();
     }
 
+    public void showFiles(ActionEvent actionEvent) throws InterruptedException {
+        if (tableView.getSelectionModel().getSelectedItem() != null){
+            Host host = tableView.getSelectionModel().getSelectedItem();
+            Client client = new Client(RequestType.DIR, host.getPortNumber());
+            Thread thread = new Thread(client);
+            thread.start();
+            System.out.println(client.filesMap);
+        }
+    }
 }

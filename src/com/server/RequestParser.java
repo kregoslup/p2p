@@ -10,7 +10,7 @@ import java.util.HashMap;
  * Created by krego on 07.11.2016.
  */
 class RequestParser {
-    private static final int chunkSize = 102400;
+    private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
     private ObjectMapper mapper;
     private HashMap<String, byte[]> filesMap;
     private RequestValidator requestValidator;
@@ -41,11 +41,11 @@ class RequestParser {
             return mapper.writeValueAsString(response);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            throw new RequestParseException();
+            throw new RequestParseException("Error parsing requet class to string");
         }
     }
 
-    Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) {
+    private Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) {
         Request response;
         switch (request.getRequestType()){
             case DIR:
@@ -66,7 +66,7 @@ class RequestParser {
                 response = new Request(RequestType.ACK, request.getDataSequence(), request.getFileName());
                 break;
             default:
-                throw new RequestParseException();
+                throw new RequestParseException("Error preparing response");
         }
         return response;
     }

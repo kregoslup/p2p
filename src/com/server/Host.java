@@ -8,11 +8,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,8 +23,8 @@ public class Host implements Runnable{
     public IntegerProperty portNumber;
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
-    public IntegerProperty hostNumber;
-    public BooleanProperty hostStatus = new SimpleBooleanProperty(true);
+    private IntegerProperty hostNumber;
+    private BooleanProperty hostStatus = new SimpleBooleanProperty(true);
     public static final int MAX_PORT = 65535;
     public static final int MIN_PORT = 49151;
 
@@ -49,6 +44,18 @@ public class Host implements Runnable{
         discoverFiles(downloadPath);
     }
 
+    public boolean getHostStatus(){
+        return hostStatus.get();
+    }
+
+    public int getHostNumber(){
+        return hostNumber.get();
+    }
+
+    public int getPortNumber(){
+        return portNumber.get();
+    }
+
     private void setDownloadPath(){
         String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber.get()).toString();
         downloadPath = new File(defaultPath);
@@ -58,7 +65,7 @@ public class Host implements Runnable{
         if (!downloadPath.exists() || downloadPath.isFile()){
             boolean created = downloadPath.mkdir();
             if (!created){
-                throw new Error();
+                throw new Error("Error creating home directory for new host");
             }
         }
     }
@@ -68,7 +75,7 @@ public class Host implements Runnable{
             for(File file: path.listFiles()){
                 if(file.isFile()){
                     try {
-                        byte[] md5Hash = this.countMD5(file.getAbsolutePath());
+                        byte[] md5Hash = FileHandler.countMD5(file.getAbsolutePath());
                         filesMap.put(file.getName(), md5Hash);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -80,25 +87,14 @@ public class Host implements Runnable{
         }
     }
 
-    private byte[] countMD5(String file) throws IOException {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            InputStream inputStream = Files.newInputStream(Paths.get(file));
-            new DigestInputStream(inputStream, md);
-            return md.digest();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return new byte[0];
-    }
-
-    void abort(){
+    public void abort(){
         hostStatus.setValue(false);
+        executorService.shutdown();
     }
 
     private void socketListeningLoop() throws IOException {
         while(hostStatus.get()) {
-            executorService.submit(new RequestHandler(serverSocket.accept(), this.filesMap));
+            executorService.execute(new RequestHandler(serverSocket.accept(), this.filesMap));
         }
     }
 
@@ -127,7 +123,7 @@ public class Host implements Runnable{
                 return parser.parseIncomingRequest(inStream);
             } catch (IOException e) {
                 e.printStackTrace();
-                throw new RequestParseException();
+                throw new RequestParseException("Error parsing incoming message");
             }
         }
 
@@ -146,6 +142,7 @@ public class Host implements Runnable{
         public void run() {
             try {
                 while(isConnected){
+                    System.out.println(12);
                     Request request = parseRequest();
                     sendResponse(request);
                 }

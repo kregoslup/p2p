@@ -21,7 +21,7 @@ class RequestValidator {
 
     private void validateFile(String fileName, HashMap<String, byte[]> filesMap) throws RequestParseException{
         if (!filesMap.containsKey(fileName)){
-            throw new RequestParseException();
+            throw new RequestParseException("Invalid requested file");
         }
     }
 
@@ -30,7 +30,7 @@ class RequestValidator {
         long size = new File(fileName).length();
         long availableParts = size / chunkSize;
         if (dataSequence > availableParts){
-            throw new RequestParseException();
+            throw new RequestParseException("Invalid file part number");
         }
     }
 
