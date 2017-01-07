@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
-<?import javafx.scene.control.*?>
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns:fx="http://javafx.com/fxml/1"
-            xmlns="http://javafx.com/javafx/8" fx:controller="com.gui.FilesListController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gui.FilesListController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -15,17 +15,16 @@
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <Button fx:id="sendButton" layoutX="14.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
-                        <Button fx:id="downloadButton" layoutX="167.0" layoutY="2.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
+                        <Button fx:id="sendButton" layoutX="14.0" layoutY="2.0" mnemonicParsing="false" onAction="#sendFile" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
+                        <Button fx:id="downloadButton" layoutX="167.0" layoutY="2.0" mnemonicParsing="false" onAction="#downloadFile" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TableView layoutX="117.0" layoutY="46.0" prefHeight="293.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="tableView" layoutX="117.0" layoutY="46.0" prefHeight="293.0" prefWidth="577.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columns>
-                            <TableColumn prefWidth="75.0" text="ID" />
-                            <TableColumn prefWidth="244.99999237060547" text="Nazwa pliku" />
-                              <TableColumn prefWidth="255.0" text="Rozmiar" />
+                            <TableColumn fx:id="fileName" prefWidth="244.99999237060547" text="Nazwa pliku" />
+                              <TableColumn fx:id="MD5" prefWidth="255.0" text="MD5" />
                           </columns>
                         </TableView>
                      </children>

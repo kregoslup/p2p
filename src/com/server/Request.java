@@ -1,19 +1,23 @@
 package com.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
 import java.util.HashMap;
 
 /**
  * Created by krego on 05.11.2016.
  */
 class Request {
-    public RequestType requestType;
-    public HashMap<String, byte[]> filesMap = null;
-    public byte[] dataBase64Array = null;
-    public long dataSequence = 0;
-    public long maxDataSequence = 0;
-    public String fileName = null;
-    public byte[] dataMD5 = null;
-    public boolean valid = true;
+    private RequestType requestType;
+    private HashMap<String, byte[]> filesMap = null;
+    private byte[] dataBase64Array = null;
+    private long dataSequence = 0;
+    private long maxDataSequence = 0;
+    private String fileName = null;
+    private byte[] dataMD5 = null;
+    private boolean valid = true;
 
     Request(RequestType requestType){
         this.requestType = requestType;
@@ -35,12 +39,43 @@ class Request {
         this.fileName = fileName;
     }
 
-    Request(RequestType requestType, long dataSequence, long maxDataSequence, String fileName, byte[] dataBase64Array){
+    @JsonCreator
+    Request(@JsonProperty("requestType") RequestType requestType,
+            @JsonProperty("filesMap") HashMap<String, byte[]> filesMap,
+            @JsonProperty("dataSequence") long dataSequence,
+            @JsonProperty("maxDataSequence") long maxDataSequence,
+            @JsonProperty("fileName") String fileName,
+            @JsonProperty("dataBase64Array") byte[] dataBase64Array){
         this.requestType = requestType;
         this.dataSequence = dataSequence;
         this.fileName = fileName;
         this.dataBase64Array = dataBase64Array;
         this.maxDataSequence = maxDataSequence;
+        this.filesMap = filesMap;
+    }
+
+    public void setRequestType(RequestType requestType) {
+        this.requestType = requestType;
+    }
+
+    public void setFilesMap(HashMap<String, byte[]> filesMap) {
+        this.filesMap = filesMap;
+    }
+
+    public void setDataBase64Array(byte[] dataBase64Array) {
+        this.dataBase64Array = dataBase64Array;
+    }
+
+    public void setDataSequence(long dataSequence) {
+        this.dataSequence = dataSequence;
+    }
+
+    public void setMaxDataSequence(long maxDataSequence) {
+        this.maxDataSequence = maxDataSequence;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public void setValid(boolean valid){

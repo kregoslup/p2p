@@ -109,7 +109,6 @@ public class Host implements Runnable{
 
     private class RequestHandler implements Runnable{
         private final Socket socket;
-        private boolean isConnected = true;
         private RequestParser parser;
 
         RequestHandler(Socket socket, HashMap<String, byte[]> filesMap){
@@ -119,8 +118,7 @@ public class Host implements Runnable{
 
         Request parseRequest() {
             try {
-                BufferedReader inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                return parser.parseIncomingRequest(inStream);
+                return parser.parseIncomingRequest(socket.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RequestParseException("Error parsing incoming message");
@@ -128,24 +126,21 @@ public class Host implements Runnable{
         }
 
         void sendResponse(Request request) throws IOException {
-            OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream());
+            BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
             String outRequest = parser.parseOutgoingRequest(request, filesMap);
-            out.write(outRequest);
+            out.write(outRequest.getBytes());
+            out.flush();
         }
 
         void handleAbortedConnection(Exception e){
-            isConnected = false;
             e.printStackTrace();
         }
 
         @Override
         public void run() {
             try {
-                while(isConnected){
-                    System.out.println(12);
-                    Request request = parseRequest();
-                    sendResponse(request);
-                }
+                Request request = parseRequest();
+                sendResponse(request);
             } catch (IOException | RequestParseException e) {
                 handleAbortedConnection(e);
             }

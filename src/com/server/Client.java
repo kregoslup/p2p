@@ -1,5 +1,7 @@
 package com.server;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +28,7 @@ public class Client implements Runnable{
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
         this.fileName = fileName;
-        this.mapper = new ObjectMapper();
+        configureMapper();
         setUpSocket();
         addHandlers();
     }
@@ -34,9 +36,15 @@ public class Client implements Runnable{
     public Client(RequestType clientActionType, int portNumber){
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
-        this.mapper = new ObjectMapper();
+        configureMapper();
         setUpSocket();
         addHandlers();
+    }
+
+    private void configureMapper(){
+        this.mapper = new ObjectMapper();
+        mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+        mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
     }
 
     private void addHandlers(){
@@ -70,7 +78,7 @@ public class Client implements Runnable{
         for (long i = 0; i < fileParts; i++){
             byte[] dataArray = fileHandler.loadFilePart(fileName, i);
             sendRequest(new Request(
-                    RequestType.PUSH, i, fileParts, fileName, dataArray
+                    RequestType.PUSH, null, i, fileParts, fileName, dataArray
             ));
             Request request = parseIncomingRequest();
             if (request.getRequestType() != RequestType.ACK){
@@ -91,8 +99,9 @@ public class Client implements Runnable{
     private void sendRequest(Request response){
         String jsonRequest = this.convertRequestToString(response);
         try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
-            outputStreamWriter.write(jsonRequest);
+            BufferedOutputStream outputStreamWriter = new BufferedOutputStream(socket.getOutputStream());
+            outputStreamWriter.write(jsonRequest.getBytes(), 0, jsonRequest.getBytes().length);
+            outputStreamWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();
             throw new Error("Got an error while sending message from client");
@@ -101,20 +110,21 @@ public class Client implements Runnable{
 
     private Request parseIncomingRequest(){
         try {
-            BufferedInputStream bufferedReader = new BufferedInputStream(socket.getInputStream());
-            return this.mapper.readValue(bufferedReader, Request.class);
+//            BufferedInputStream bufferedReader = new BufferedInputStream(socket.getInputStream());
+//            String response = SocketHandler.readSocketStreamToString(bufferedReader);
+            return this.mapper.readValue(socket.getInputStream(), Request.class);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RequestParseException("Error parsing host request");
         }
     }
 
-    private void getFiles(){
+    private void getFiles() throws IOException{
         Request request = new Request(RequestType.DIR);
         sendRequest(request);
-        System.out.println(request);
         Request response = parseIncomingRequest();
         filesMap = response.getFilesMap();
+        socket.close();
     }
 
     private boolean checkMD5(){
@@ -129,7 +139,7 @@ public class Client implements Runnable{
         return response.isValid();
     }
 
-    private void parseGUICommand(){
+    private void parseGUICommand() throws IOException{
         switch(clientActionType){
             case DIR:
                 getFiles();
@@ -148,6 +158,11 @@ public class Client implements Runnable{
 
     @Override
     public void run() {
-        parseGUICommand();
+        try {
+            parseGUICommand();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new Error("Error parsing gui command");
+        }
     }
 }

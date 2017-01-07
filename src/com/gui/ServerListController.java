@@ -6,13 +6,18 @@ import com.server.RequestType;
 import com.server.ServerCreatingError;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import javafx.event.ActionEvent;
+import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -105,13 +110,35 @@ public class ServerListController implements Initializable{
         alert.showAndWait();
     }
 
+    private void startNewClient(Client client) throws InterruptedException{
+        Thread thread = new Thread(client);
+        thread.start();
+        thread.join();
+    }
+
+    private Host getCurrentlySelectedHost(){
+        return tableView.getSelectionModel().getSelectedItem();
+    }
+
+    private void openFilesWindow(){
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("host.fxml"));
+            Parent root1 = (Parent) fxmlLoader.load();
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root1));
+            stage.show();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void showFiles(ActionEvent actionEvent) throws InterruptedException {
         if (tableView.getSelectionModel().getSelectedItem() != null){
-            Host host = tableView.getSelectionModel().getSelectedItem();
+            Host host = getCurrentlySelectedHost();
             Client client = new Client(RequestType.DIR, host.getPortNumber());
-            Thread thread = new Thread(client);
-            thread.start();
-            System.out.println(client.filesMap);
+            startNewClient(client);
+            Context.getInstance().setCurrentFiles(client.filesMap);
+            openFilesWindow();
         }
     }
 }

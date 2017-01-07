@@ -4,6 +4,7 @@ import com.server.Host;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,6 +16,7 @@ public class Context {
     static final int MAX_THREAD_POOL_SIZE_PER_HOST = 3;
     private static final int MAX_HOSTS = 10;
     private final ExecutorService executorService = Executors.newFixedThreadPool(MAX_HOSTS);
+    private HashMap<String, byte[]> currentFiles;
 
     static Context getInstance(){
         return instance;
@@ -29,5 +31,13 @@ public class Context {
     void addHost(Host host){
         hosts.add(host);
         executorService.execute(host);
+    }
+
+    public HashMap<String, byte[]> getCurrentFiles() {
+        return currentFiles;
+    }
+
+    public void setCurrentFiles(HashMap<String, byte[]> files) {
+        currentFiles = files;
     }
 }

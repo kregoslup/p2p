@@ -1,9 +1,12 @@
 package com.server;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.HashMap;
 
 /**
@@ -18,16 +21,25 @@ class RequestParser {
 
     RequestParser(HashMap<String, byte[]> filesMap){
         mapper = new ObjectMapper();
+        mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+        mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         this.filesMap = filesMap;
         requestValidator = new RequestValidator(filesMap);
         this.fileHandler = new FileHandler(chunkSize);
     }
 
-    Request parseIncomingRequest(BufferedReader bufferedReader)
+    Request parseIncomingRequest(InputStream inputStream)
             throws IOException, RequestParseException{
-        Request request = this.mapper.readValue(bufferedReader, Request.class);
-        requestValidator.validateRequest(request, filesMap, chunkSize);
+//        String response = SocketHandler.readSocketStreamToString(inputStream);
+        Request request = mapper.readValue(inputStream, Request.class);
+        validateRequest(request);
         return request;
+    }
+
+    private void validateRequest(Request request){
+        if (request.getFileName() != null) {
+            requestValidator.validateRequest(request, filesMap, chunkSize);
+        }
     }
 
     String parseOutgoingRequest(Request request,
