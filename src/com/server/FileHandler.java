@@ -72,7 +72,8 @@ class FileHandler {
       try {
          MessageDigest md = MessageDigest.getInstance("MD5");
          InputStream inputStream = Files.newInputStream(Paths.get(file));
-         new DigestInputStream(inputStream, md);
+         DigestInputStream dis = new DigestInputStream(inputStream, md);
+         dis.close();
          return md.digest();
       } catch (NoSuchAlgorithmException e) {
          e.printStackTrace();

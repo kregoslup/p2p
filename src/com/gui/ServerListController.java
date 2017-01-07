@@ -4,6 +4,7 @@ import com.server.Client;
 import com.server.Host;
 import com.server.RequestType;
 import com.server.ServerCreatingError;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Created by krego on 29.12.2016.
@@ -28,10 +30,12 @@ public class ServerListController implements Initializable{
     @FXML public Button newHostButton;
     @FXML public Button showFilesButton;
     @FXML public TextField portNumberInput;
+    @FXML public Button start;
     @FXML private TableView<Host> tableView;
     @FXML private TableColumn<Host, Integer> hostNumber;
     @FXML private TableColumn<Host, Integer> portNumber;
     @FXML private TableColumn<Host, Boolean> hostStatus;
+    private Host currentHost;
 
     private void configureInputField(){
         addTextFieldValidation();
@@ -57,7 +61,10 @@ public class ServerListController implements Initializable{
     }
 
     private ObservableList<Host> parseHostsList(){
-        return Context.getInstance().getHosts();
+        ObservableList<Host> hosts = FXCollections.observableArrayList();
+        ObservableList<Host> allHosts = Context.getInstance().getHosts();
+        hosts.addAll(allHosts.stream().filter(hostEntry -> hostEntry != currentHost).collect(Collectors.toList()));
+        return hosts;
     }
 
     @Override
@@ -86,20 +93,42 @@ public class ServerListController implements Initializable{
         return false;
     }
 
-    @FXML
-    public void addNewHost(ActionEvent actionEvent) {
+    void refresh(){
+        tableView.setItems(parseHostsList());
+    }
+
+    private Host addHost(){
         if (validPortNumber()){
             try {
                 Host host = new Host(
                         Integer.valueOf(portNumberInput.textProperty().get()),
                         Context.MAX_THREAD_POOL_SIZE_PER_HOST);
                 Context.getInstance().addHost(host);
+                return host;
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new ServerCreatingError("Error while creating new server");
             }
         }else{
             showPortAlertError();
+            throw new ServerCreatingError("Error while creating new server - wrong port");
+        }
+    }
+
+    @FXML
+    public void addNewHost(ActionEvent actionEvent) {
+        loadNewWindow("main.fxml");
+    }
+
+    private void loadNewWindow(String fxmlName){
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlName));
+            Parent root1 = (Parent) fxmlLoader.load();
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root1));
+            stage.show();
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -121,15 +150,7 @@ public class ServerListController implements Initializable{
     }
 
     private void openFilesWindow(){
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("host.fxml"));
-            Parent root1 = (Parent) fxmlLoader.load();
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root1));
-            stage.show();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        loadNewWindow("host.fxml");
     }
 
     public void showFiles(ActionEvent actionEvent) throws InterruptedException {
@@ -140,5 +161,10 @@ public class ServerListController implements Initializable{
             Context.getInstance().setCurrentFiles(client.filesMap);
             openFilesWindow();
         }
+    }
+
+    public void startHost(ActionEvent actionEvent) {
+        currentHost = addHost();
+        Context.getInstance().addServerList(this);
     }
 }

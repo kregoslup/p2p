@@ -2,8 +2,10 @@ package com.gui;
 
 import com.server.Host;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,6 +19,13 @@ public class Context {
     private static final int MAX_HOSTS = 10;
     private final ExecutorService executorService = Executors.newFixedThreadPool(MAX_HOSTS);
     private HashMap<String, byte[]> currentFiles;
+    private ArrayList<ServerListController> serverList = new ArrayList<>();
+
+    private Context(){
+        hosts.addListener((ListChangeListener<? super Host>) c -> {
+            serverList.forEach(ServerListController::refresh);
+        });
+    }
 
     static Context getInstance(){
         return instance;
@@ -33,11 +42,15 @@ public class Context {
         executorService.execute(host);
     }
 
-    public HashMap<String, byte[]> getCurrentFiles() {
+    void addServerList(ServerListController controller){
+        serverList.add(controller);
+    }
+
+    HashMap<String, byte[]> getCurrentFiles() {
         return currentFiles;
     }
 
-    public void setCurrentFiles(HashMap<String, byte[]> files) {
+    void setCurrentFiles(HashMap<String, byte[]> files) {
         currentFiles = files;
     }
 }
