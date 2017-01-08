@@ -128,6 +128,7 @@ public class Host implements Runnable{
         void sendResponse(Request request) throws IOException {
             BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
             String outRequest = parser.parseOutgoingRequest(request, filesMap);
+            System.out.println(outRequest);
             out.write(outRequest.getBytes());
             out.flush();
         }

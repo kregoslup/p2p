@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
  * Created by krego on 27.12.2016.
  */
 class FileHandler {
-   private static final String WRITE = "w";
+   private static final String WRITE = "rw";
    private static final String READ = "r";
    private int chunkSize;
 
@@ -19,7 +19,9 @@ class FileHandler {
       this.chunkSize = chunkSize;
    }
 
-   FileHandler() {}
+   FileHandler() {
+      chunkSize = RequestConfig.getInstance().getChunkSize();
+   }
 
    void writeFilePart(String fileName, byte[] filePart, long partNumber){
       RandomAccessFile randomAccessFile;
@@ -65,7 +67,7 @@ class FileHandler {
 
    long calculateFileParts(File file, int chunkSize){
       long length = file.length();
-      return (length / chunkSize);
+      return (length / chunkSize) + 1;
    }
 
    static byte[] countMD5(String file) throws IOException {
@@ -73,6 +75,11 @@ class FileHandler {
          MessageDigest md = MessageDigest.getInstance("MD5");
          InputStream inputStream = Files.newInputStream(Paths.get(file));
          DigestInputStream dis = new DigestInputStream(inputStream, md);
+         byte[] buf = new byte[1024];
+         int bytesRead;
+         while ((bytesRead = dis.read(buf)) != -1){
+            md.update(buf, 0, bytesRead);
+         }
          dis.close();
          return md.digest();
       } catch (NoSuchAlgorithmException e) {

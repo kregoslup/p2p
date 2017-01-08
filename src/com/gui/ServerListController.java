@@ -20,7 +20,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +39,7 @@ public class ServerListController implements Initializable{
     @FXML private TableColumn<Host, Integer> portNumber;
     @FXML private TableColumn<Host, Boolean> hostStatus;
     private Host currentHost;
+    private Stage stage;
 
     private void configureInputField(){
         addTextFieldValidation();
@@ -110,32 +114,38 @@ public class ServerListController implements Initializable{
                 throw new ServerCreatingError("Error while creating new server");
             }
         }else{
-            showPortAlertError();
+            showAlertError(AlertErrorConstants.ADD_HOST_ERR);
             throw new ServerCreatingError("Error while creating new server - wrong port");
         }
     }
 
     @FXML
     public void addNewHost(ActionEvent actionEvent) {
-        loadNewWindow("main.fxml");
+        if(currentHost != null) {
+            loadNewWindow("main.fxml");
+        }else {
+            showAlertError(AlertErrorConstants.NEW_HOST_ERR);
+        }
     }
 
-    private void loadNewWindow(String fxmlName){
+    private FXMLLoader loadNewWindow(String fxmlName){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlName));
             Parent root1 = (Parent) fxmlLoader.load();
             Stage stage = new Stage();
             stage.setScene(new Scene(root1));
             stage.show();
+            return fxmlLoader;
         } catch(Exception e) {
             e.printStackTrace();
+            throw new Error("Error creating new window");
         }
     }
 
-    private void showPortAlertError() {
+    private void showAlertError(String alertText) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setContentText("Nieprawidlowy numer portu");
+        alert.setContentText(alertText);
         alert.showAndWait();
     }
 
@@ -149,17 +159,22 @@ public class ServerListController implements Initializable{
         return tableView.getSelectionModel().getSelectedItem();
     }
 
-    private void openFilesWindow(){
-        loadNewWindow("host.fxml");
+    private void openFilesWindow(int port) {
+        FXMLLoader loader = loadNewWindow("host.fxml");
+        FilesListController controller = loader.<FilesListController>getController();
+        controller.setHostPort(port);
+        controller.setStage(stage);
     }
 
     public void showFiles(ActionEvent actionEvent) throws InterruptedException {
-        if (tableView.getSelectionModel().getSelectedItem() != null){
+        if (tableView.getSelectionModel().getSelectedItem() != null && currentHost != null){
             Host host = getCurrentlySelectedHost();
             Client client = new Client(RequestType.DIR, host.getPortNumber());
             startNewClient(client);
             Context.getInstance().setCurrentFiles(client.filesMap);
-            openFilesWindow();
+            openFilesWindow(host.getPortNumber());
+        }else {
+            showAlertError(AlertErrorConstants.SHOW_FILES_ERR);
         }
     }
 

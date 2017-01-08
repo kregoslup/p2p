@@ -16,7 +16,9 @@ class RequestValidator {
     void validateRequest(Request request, HashMap<String, byte[]> filesMap, long chunkSize)
             throws RequestParseException{
         validateDataSequence(request.getDataSequence(), request.getFileName(), chunkSize);
-        validateFile(request.getFileName(), filesMap);
+        if (request.getRequestType() == RequestType.PULL) {
+            validateFile(request.getFileName(), filesMap);
+        }
     }
 
     private void validateFile(String fileName, HashMap<String, byte[]> filesMap) throws RequestParseException{

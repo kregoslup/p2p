@@ -1,15 +1,22 @@
 package com.gui;
 
+import com.server.Client;
+import com.server.RequestType;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -24,11 +31,17 @@ public class FilesListController implements Initializable{
     @FXML public TableColumn<ObservableMap.Entry<String, String>, String> fileName;
     @FXML public TableColumn<ObservableMap.Entry<String, String>, String> MD5;
     private ObservableMap<String, String> files;
+    private int port;
+    private Stage stage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setFilesMap();
         configureTableView();
+    }
+
+    void setHostPort(int port){
+        this.port = port;
     }
 
     private void setFilesMap(){
@@ -48,7 +61,6 @@ public class FilesListController implements Initializable{
                 hexString.append(Integer.toHexString(0xFF & md5[i]));
             }
         }
-        System.out.println(hexString.toString());
         return hexString.toString();
     }
 
@@ -58,8 +70,18 @@ public class FilesListController implements Initializable{
         tableView.setItems(FXCollections.observableArrayList(files.entrySet()));
     }
 
-    public void sendFile(ActionEvent actionEvent) {
+    void setStage(Stage stage){
+        this.stage = stage;
+    }
 
+    public void sendFile(ActionEvent actionEvent) throws InterruptedException{
+        final FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose file to send");
+        File file = fileChooser.showOpenDialog(stage);
+        Client client = new Client(RequestType.PUSH, port, file.getPath());
+        Thread t = new Thread(client);
+        t.start();
+        t.join();
     }
 
     public void downloadFile(ActionEvent actionEvent) {

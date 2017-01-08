@@ -98,6 +98,7 @@ public class Client implements Runnable{
 
     private void sendRequest(Request response){
         String jsonRequest = this.convertRequestToString(response);
+        System.out.println(jsonRequest);
         try {
             BufferedOutputStream outputStreamWriter = new BufferedOutputStream(socket.getOutputStream());
             outputStreamWriter.write(jsonRequest.getBytes(), 0, jsonRequest.getBytes().length);
@@ -159,6 +160,7 @@ public class Client implements Runnable{
     @Override
     public void run() {
         try {
+            System.out.println(123);
             parseGUICommand();
         } catch (IOException e) {
             e.printStackTrace();
