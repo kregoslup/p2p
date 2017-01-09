@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.util.HashMap;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -30,7 +30,6 @@ class RequestParser {
 
     Request parseIncomingRequest(InputStream inputStream)
             throws IOException, RequestParseException{
-//        String response = SocketHandler.readSocketStreamToString(inputStream);
         Request request = mapper.readValue(inputStream, Request.class);
         validateRequest(request);
         return request;
@@ -59,6 +58,7 @@ class RequestParser {
 
     private Request prepareResponseMethod(Request request, HashMap<String, byte[]> filesMap) {
         Request response;
+        String fileName;
         switch (request.getRequestType()){
             case DIR:
                 response = new Request(RequestType.DIR, filesMap);
@@ -69,12 +69,14 @@ class RequestParser {
                 break;
             case PULL:
                 // ja czyli serwer wysylam
-                response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
+                fileName = fileHandler.getFullFileName(request.getFileName());
+                response = new Request(RequestType.PULL, request.getDataSequence(), fileName);
                 response.setDataMD5(fileHandler.loadFilePart(request.getFileName(), request.getDataSequence()));
                 break;
             case PUSH:
                 // ktos mi wysyla, ja sciagam, ja serwer
-                fileHandler.writeFilePart(request.getFileName(), request.getDataBase64Array(), request.getDataSequence());
+                fileName = fileHandler.getFullFileName(request.getFileName());
+                fileHandler.writeFilePart(fileName, request.getDataBase64Array(), request.getDataSequence());
                 response = new Request(RequestType.ACK, request.getDataSequence(), request.getFileName());
                 break;
             default:

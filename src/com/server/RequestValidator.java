@@ -15,7 +15,7 @@ class RequestValidator {
 
     void validateRequest(Request request, HashMap<String, byte[]> filesMap, long chunkSize)
             throws RequestParseException{
-        validateDataSequence(request.getDataSequence(), request.getFileName(), chunkSize);
+        validateDataSequence(request.getDataSequence(), request.getMaxDataSequence());
         if (request.getRequestType() == RequestType.PULL) {
             validateFile(request.getFileName(), filesMap);
         }
@@ -27,10 +27,8 @@ class RequestValidator {
         }
     }
 
-    private void validateDataSequence(long dataSequence, String fileName, long chunkSize)
+    private void validateDataSequence(long dataSequence, long availableParts)
             throws RequestParseException{
-        long size = new File(fileName).length();
-        long availableParts = size / chunkSize;
         if (dataSequence > availableParts){
             throw new RequestParseException("Invalid file part number");
         }

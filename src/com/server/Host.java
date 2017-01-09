@@ -40,6 +40,7 @@ public class Host implements Runnable{
 
     private void configureDownloadPath(){
         setDownloadPath();
+        RequestConfig.getInstance().setDownloadPath(downloadPath.toPath());
         createFolderIfNotExisting();
         discoverFiles(downloadPath);
     }
@@ -94,6 +95,7 @@ public class Host implements Runnable{
 
     private void socketListeningLoop() throws IOException {
         while(hostStatus.get()) {
+            System.out.println(123890);
             executorService.execute(new RequestHandler(serverSocket.accept(), this.filesMap));
         }
     }

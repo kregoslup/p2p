@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Base64;
 import java.util.HashMap;
 
 /**
@@ -23,6 +24,7 @@ public class Client implements Runnable{
     private ObjectMapper mapper;
     public HashMap<String, byte[]> filesMap;
     private static final int FILE_FIRST_PART = 0;
+    private BufferedOutputStream outputStreamWriter;
 
     public Client(RequestType clientActionType, int portNumber, String fileName){
         this.clientActionType = clientActionType;
@@ -62,6 +64,7 @@ public class Client implements Runnable{
 
     private void downloadFile(){
         Request request = new Request(RequestType.PULL, Client.FILE_FIRST_PART, fileName);
+        fileName = fileHandler.getFullFileName(fileName);
         sendRequest(request);
         Request response = parseIncomingRequest();
         fileHandler.writeFilePart(fileName, response.getDataBase64Array(), 0);
@@ -73,17 +76,28 @@ public class Client implements Runnable{
         }
     }
 
+    private void reconnect(){
+        try {
+            outputStreamWriter.close();
+            setUpSocket();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void uploadFile(){
+        String shortFileName = new File(fileName).getName();
         long fileParts = fileHandler.calculateFileParts(new File(fileName), chunkSize);
         for (long i = 0; i < fileParts; i++){
             byte[] dataArray = fileHandler.loadFilePart(fileName, i);
             sendRequest(new Request(
-                    RequestType.PUSH, null, i, fileParts, fileName, dataArray
+                    RequestType.PUSH, null, i, fileParts, shortFileName, dataArray
             ));
             Request request = parseIncomingRequest();
             if (request.getRequestType() != RequestType.ACK){
                 break;
             }
+            reconnect();
         }
     }
 
@@ -100,7 +114,7 @@ public class Client implements Runnable{
         String jsonRequest = this.convertRequestToString(response);
         System.out.println(jsonRequest);
         try {
-            BufferedOutputStream outputStreamWriter = new BufferedOutputStream(socket.getOutputStream());
+            outputStreamWriter = new BufferedOutputStream(socket.getOutputStream());
             outputStreamWriter.write(jsonRequest.getBytes(), 0, jsonRequest.getBytes().length);
             outputStreamWriter.flush();
         } catch (IOException e) {
@@ -111,8 +125,6 @@ public class Client implements Runnable{
 
     private Request parseIncomingRequest(){
         try {
-//            BufferedInputStream bufferedReader = new BufferedInputStream(socket.getInputStream());
-//            String response = SocketHandler.readSocketStreamToString(bufferedReader);
             return this.mapper.readValue(socket.getInputStream(), Request.class);
         } catch (IOException e) {
             e.printStackTrace();
@@ -125,7 +137,7 @@ public class Client implements Runnable{
         sendRequest(request);
         Request response = parseIncomingRequest();
         filesMap = response.getFilesMap();
-        socket.close();
+        outputStreamWriter.close();
     }
 
     private boolean checkMD5(){

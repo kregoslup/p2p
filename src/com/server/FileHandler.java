@@ -24,6 +24,7 @@ class FileHandler {
    }
 
    void writeFilePart(String fileName, byte[] filePart, long partNumber){
+      System.out.print(fileName);
       RandomAccessFile randomAccessFile;
       try {
          randomAccessFile = new RandomAccessFile(fileName, WRITE);
@@ -35,10 +36,15 @@ class FileHandler {
          long offset = calculateOffset(partNumber);
          randomAccessFile.seek(offset);
          randomAccessFile.write(filePart);
+         randomAccessFile.close();
       } catch (IOException e) {
          e.printStackTrace();
          throw new FileWriteError("Error writing random access file");
       }
+   }
+
+   String getFullFileName(String fileName){
+      return Paths.get(RequestConfig.getInstance().getDownloadPath().toString(), fileName).toString();
    }
 
    private long calculateOffset(long partNumber) throws IOException{
@@ -51,13 +57,14 @@ class FileHandler {
          randomAccessFile = new RandomAccessFile(fileName, READ);
       } catch (FileNotFoundException e) {
          e.printStackTrace();
-          throw new FileWriteError("Error opening file");
+         throw new FileWriteError("Error opening file");
       }
       try {
          long offset = calculateOffset(partNumber);
-         byte[] filePart = new byte[chunkSize];
          randomAccessFile.seek(offset);
+         byte[] filePart = new byte[calculatePartLength(fileName, offset, RequestConfig.getInstance().getChunkSize())];
          randomAccessFile.read(filePart);
+         randomAccessFile.close();
          return filePart;
       } catch (IOException e) {
          e.printStackTrace();
@@ -65,7 +72,17 @@ class FileHandler {
       }
    }
 
-   long calculateFileParts(File file, int chunkSize){
+   private int calculatePartLength(String fileName, long offset, int chunkSize) {
+        File file = new File(fileName);
+        long fileLength = file.length();
+        if (fileLength - offset > chunkSize){
+           return chunkSize;
+        }
+        // Mozna bezpiecznie rzutowac bo chunk size jest intem a ta wartosc jest mniejsza
+        return (int)(fileLength - offset);
+   }
+
+   long calculateFileParts(File file, long chunkSize){
       long length = file.length();
       return (length / chunkSize) + 1;
    }

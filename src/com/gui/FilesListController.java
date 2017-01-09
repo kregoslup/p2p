@@ -20,6 +20,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by krego on 29.12.2016.
@@ -33,6 +35,7 @@ public class FilesListController implements Initializable{
     private ObservableMap<String, String> files;
     private int port;
     private Stage stage;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -75,13 +78,12 @@ public class FilesListController implements Initializable{
     }
 
     public void sendFile(ActionEvent actionEvent) throws InterruptedException{
-        final FileChooser fileChooser = new FileChooser();
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file to send");
         File file = fileChooser.showOpenDialog(stage);
-        Client client = new Client(RequestType.PUSH, port, file.getPath());
-        Thread t = new Thread(client);
-        t.start();
-        t.join();
+        if (file != null) {
+            executorService.execute(new Client(RequestType.PUSH, port, file.getPath()));
+        }
     }
 
     public void downloadFile(ActionEvent actionEvent) {
