@@ -19,13 +19,13 @@ class RequestParser {
     private RequestValidator requestValidator;
     private FileHandler fileHandler;
 
-    RequestParser(HashMap<String, byte[]> filesMap){
+    RequestParser(HashMap<String, byte[]> filesMap, File downloadPath){
         mapper = new ObjectMapper();
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         this.filesMap = filesMap;
         requestValidator = new RequestValidator(filesMap);
-        this.fileHandler = new FileHandler(chunkSize);
+        this.fileHandler = new FileHandler(chunkSize, downloadPath);
     }
 
     Request parseIncomingRequest(InputStream inputStream)
@@ -70,8 +70,10 @@ class RequestParser {
             case PULL:
                 // ja czyli serwer wysylam
                 fileName = fileHandler.getFullFileName(request.getFileName());
+                System.out.println(fileName);
                 response = new Request(RequestType.PULL, request.getDataSequence(), fileName);
-                response.setDataMD5(fileHandler.loadFilePart(request.getFileName(), request.getDataSequence()));
+                response.setDataBase64Array(fileHandler.loadFilePart(fileName, request.getDataSequence()));
+                response.setMaxDataSequence(fileHandler.calculateFileParts(new File(fileName)));
                 break;
             case PUSH:
                 // ktos mi wysyla, ja sciagam, ja serwer

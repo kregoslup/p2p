@@ -25,14 +25,23 @@ public class Client implements Runnable{
     public HashMap<String, byte[]> filesMap;
     private static final int FILE_FIRST_PART = 0;
     private BufferedOutputStream outputStreamWriter;
+    private File downloadPath;
 
-    public Client(RequestType clientActionType, int portNumber, String fileName){
+    public Client(File downloadPath, RequestType clientActionType, int portNumber, String fileName){
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
         this.fileName = fileName;
         configureMapper();
         setUpSocket();
-        addHandlers();
+        addHandlers(downloadPath);
+    }
+
+    public Client(File downloadPath, RequestType clientActionType, int portNumber){
+        this.clientActionType = clientActionType;
+        this.portNumber = portNumber;
+        configureMapper();
+        setUpSocket();
+        addHandlers(downloadPath);
     }
 
     public Client(RequestType clientActionType, int portNumber){
@@ -40,7 +49,7 @@ public class Client implements Runnable{
         this.portNumber = portNumber;
         configureMapper();
         setUpSocket();
-        addHandlers();
+        addHandlers(downloadPath);
     }
 
     private void configureMapper(){
@@ -49,15 +58,14 @@ public class Client implements Runnable{
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
     }
 
-    private void addHandlers(){
-        this.fileHandler = new FileHandler();
+    private void addHandlers(File downloadPath){
+        this.fileHandler = new FileHandler(downloadPath);
     }
 
     private void setUpSocket(){
         try {
             socket = new Socket(InetAddress.getByName("localhost"), portNumber);
         } catch (IOException e) {
-            e.printStackTrace();
             throw new Error("Error setting up socket in client");
         }
     }
@@ -69,10 +77,12 @@ public class Client implements Runnable{
         Request response = parseIncomingRequest();
         fileHandler.writeFilePart(fileName, response.getDataBase64Array(), 0);
         long fileParts = response.getMaxDataSequence();
+        reconnect();
         for (int i = 1; i<fileParts; i++){
             sendRequest(new Request(RequestType.PULL, i, fileName));
             Request loopResponse = parseIncomingRequest();
             fileHandler.writeFilePart(fileName, loopResponse.getDataBase64Array(), 0);
+            reconnect();
         }
     }
 
@@ -87,7 +97,7 @@ public class Client implements Runnable{
 
     private void uploadFile(){
         String shortFileName = new File(fileName).getName();
-        long fileParts = fileHandler.calculateFileParts(new File(fileName), chunkSize);
+        long fileParts = fileHandler.calculateFileParts(new File(fileName));
         for (long i = 0; i < fileParts; i++){
             byte[] dataArray = fileHandler.loadFilePart(fileName, i);
             sendRequest(new Request(

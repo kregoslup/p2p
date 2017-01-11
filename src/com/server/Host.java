@@ -17,48 +17,33 @@ import java.util.concurrent.Executors;
  */
 
 public class Host implements Runnable{
-    private static int hostsCount;
     private final ServerSocket serverSocket;
     private File downloadPath;
-    public IntegerProperty portNumber;
+    public int portNumber;
     private final ExecutorService executorService;
     private HashMap<String, byte[]> filesMap;
-    private IntegerProperty hostNumber;
-    private BooleanProperty hostStatus = new SimpleBooleanProperty(true);
+    private int hostNumber;
+    private boolean hostStatus = true;
     public static final int MAX_PORT = 65535;
     public static final int MIN_PORT = 49151;
 
-    public Host(int portNumber, int threadPoolSize) throws IOException {
-        hostsCount += 1;
-        this.portNumber = new SimpleIntegerProperty(portNumber);
+    public Host(int portNumber, int threadPoolSize, int appNumber) throws IOException {
+        this.portNumber = portNumber;
         this.serverSocket = new ServerSocket(portNumber);
-        this.hostNumber = new SimpleIntegerProperty(hostsCount);
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
         this.filesMap = new HashMap<>();
+        this.hostNumber = appNumber;
         configureDownloadPath();
     }
 
     private void configureDownloadPath(){
         setDownloadPath();
-        RequestConfig.getInstance().setDownloadPath(downloadPath.toPath());
         createFolderIfNotExisting();
         discoverFiles(downloadPath);
     }
 
-    public boolean getHostStatus(){
-        return hostStatus.get();
-    }
-
-    public int getHostNumber(){
-        return hostNumber.get();
-    }
-
-    public int getPortNumber(){
-        return portNumber.get();
-    }
-
     private void setDownloadPath(){
-        String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber.get()).toString();
+        String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber).toString();
         downloadPath = new File(defaultPath);
     }
 
@@ -88,15 +73,18 @@ public class Host implements Runnable{
         }
     }
 
+    public File getDownloadPath(){
+        return downloadPath;
+    }
+
     public void abort(){
-        hostStatus.setValue(false);
+        hostStatus = false;
         executorService.shutdown();
     }
 
     private void socketListeningLoop() throws IOException {
-        while(hostStatus.get()) {
-            System.out.println(123890);
-            executorService.execute(new RequestHandler(serverSocket.accept(), this.filesMap));
+        while(hostStatus) {
+            executorService.execute(new RequestHandler(serverSocket.accept(), this.filesMap, downloadPath));
         }
     }
 
@@ -113,9 +101,9 @@ public class Host implements Runnable{
         private final Socket socket;
         private RequestParser parser;
 
-        RequestHandler(Socket socket, HashMap<String, byte[]> filesMap){
+        RequestHandler(Socket socket, HashMap<String, byte[]> filesMap, File downloadPath){
             this.socket = socket;
-            parser = new RequestParser(filesMap);
+            parser = new RequestParser(filesMap, downloadPath);
         }
 
         Request parseRequest() {

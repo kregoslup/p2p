@@ -14,13 +14,16 @@ class FileHandler {
    private static final String WRITE = "rw";
    private static final String READ = "r";
    private int chunkSize;
+   private File downloadPath;
 
-   FileHandler(int chunkSize){
+   FileHandler(int chunkSize, File downloadPath){
       this.chunkSize = chunkSize;
+      this.downloadPath = downloadPath;
    }
 
-   FileHandler() {
+   FileHandler(File downloadPath) {
       chunkSize = RequestConfig.getInstance().getChunkSize();
+      this.downloadPath = downloadPath;
    }
 
    void writeFilePart(String fileName, byte[] filePart, long partNumber){
@@ -44,7 +47,7 @@ class FileHandler {
    }
 
    String getFullFileName(String fileName){
-      return Paths.get(RequestConfig.getInstance().getDownloadPath().toString(), fileName).toString();
+      return Paths.get(downloadPath.toString(), fileName).toString();
    }
 
    private long calculateOffset(long partNumber) throws IOException{
@@ -82,7 +85,7 @@ class FileHandler {
         return (int)(fileLength - offset);
    }
 
-   long calculateFileParts(File file, long chunkSize){
+   long calculateFileParts(File file){
       long length = file.length();
       return (length / chunkSize) + 1;
    }
