@@ -45,7 +45,7 @@ class RequestParser {
         return convertResponseToString(response);
     }
 
-    private String convertResponseToString(Request response){
+    String convertResponseToString(Request response){
         try {
             return mapper.writeValueAsString(response);
         } catch (JsonProcessingException e) {

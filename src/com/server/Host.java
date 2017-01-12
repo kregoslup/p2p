@@ -95,9 +95,11 @@ public class Host implements Runnable{
     private class RequestHandler implements Runnable{
         private final Socket socket;
         private RequestParser parser;
+        private File downloadPath;
 
         RequestHandler(Socket socket, HashMap<String, byte[]> filesMap, File downloadPath){
             this.socket = socket;
+            this.downloadPath = downloadPath;
             parser = new RequestParser(filesMap, downloadPath);
         }
 
@@ -110,18 +112,38 @@ public class Host implements Runnable{
             }
         }
 
+        private void logRequest(String request){
+            try {
+                RequestsLogHandler.getInstance().logRequest(this.downloadPath, request);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void logRequest(Request request){
+            try {
+                RequestsLogHandler
+                        .getInstance()
+                        .logRequest(this.downloadPath, request.getRequestType().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         void sendResponse(Request request) throws IOException {
             BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
+            String outRequest;
             if(!(request.getRequestType() == RequestType.HTML)) {
-                String outRequest = parser.parseOutgoingRequest(request, filesMap);
-                System.out.println(outRequest);
+                outRequest = parser.parseOutgoingRequest(request, filesMap);
                 out.write(outRequest.getBytes(), 0, outRequest.getBytes().length);
             }else{
-                byte[] response = HTMLParser.createResponse();
-                out.write(response);
+                String response = HTMLParser.createResponse(socket.getInputStream(), downloadPath);
+                out.write(response.getBytes());
+                outRequest = "HTML: Log file";
             }
             out.flush();
             out.close();
+            logRequest(outRequest);
         }
 
         void handleAbortedConnection(Exception e){
@@ -134,6 +156,7 @@ public class Host implements Runnable{
                 Request request = parseRequest();
                 sendResponse(request);
                 socket.close();
+                logRequest(request);
             } catch (IOException | RequestParseException e) {
                 handleAbortedConnection(e);
             }

@@ -108,7 +108,7 @@ public class ServerListController implements Initializable{
         if (validPortNumber() && currentHost != null){
             int portNumber = Integer.valueOf(portNumberInput.textProperty().get());
             try {
-                Client client = new Client(RequestType.DIR, portNumber);
+                Client client = new Client(RequestType.DIR, portNumber, currentHost.getDownloadPath());
                 startNewClient(client);
                 Context.getInstance().setCurrentFiles(client.filesMap);
                 openFilesWindow(portNumber, currentHost.getDownloadPath());

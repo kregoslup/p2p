@@ -21,6 +21,10 @@ public enum RequestType {
         return statusCode;
     }
 
+    public String getRequestTypeVerbose(RequestType type){
+        return type.name();
+    }
+
     @Override
     public String toString(){
         return "" + statusCode;
