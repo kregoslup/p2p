@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Base64;
 import java.util.HashMap;
 
 /**
@@ -19,13 +18,11 @@ public class Client implements Runnable{
     private int portNumber;
     private Socket socket;
     private FileHandler fileHandler;
-    private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
     private String fileName;
     private ObjectMapper mapper;
     public HashMap<String, byte[]> filesMap;
     private static final int FILE_FIRST_PART = 0;
     private BufferedOutputStream outputStreamWriter;
-    private File downloadPath;
 
     public Client(File downloadPath, RequestType clientActionType, int portNumber, String fileName){
         this.clientActionType = clientActionType;
@@ -36,20 +33,11 @@ public class Client implements Runnable{
         addHandlers(downloadPath);
     }
 
-    public Client(File downloadPath, RequestType clientActionType, int portNumber){
-        this.clientActionType = clientActionType;
-        this.portNumber = portNumber;
-        configureMapper();
-        setUpSocket();
-        addHandlers(downloadPath);
-    }
-
     public Client(RequestType clientActionType, int portNumber){
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
         configureMapper();
         setUpSocket();
-        addHandlers(downloadPath);
     }
 
     private void configureMapper(){
@@ -70,20 +58,26 @@ public class Client implements Runnable{
         }
     }
 
-    private void downloadFile(){
+    private void downloadFile() throws IOException {
         Request request = new Request(RequestType.PULL, Client.FILE_FIRST_PART, fileName);
-        fileName = fileHandler.getFullFileName(fileName);
+        String fullFileName = fileHandler.getFullFileName(fileName);
         sendRequest(request);
         Request response = parseIncomingRequest();
-        fileHandler.writeFilePart(fileName, response.getDataBase64Array(), 0);
+        disconnect();
+        fileHandler.writeFilePart(fullFileName, response.getDataBase64Array(), 0);
         long fileParts = response.getMaxDataSequence();
-        reconnect();
         for (int i = 1; i<fileParts; i++){
+            reconnect();
             sendRequest(new Request(RequestType.PULL, i, fileName));
             Request loopResponse = parseIncomingRequest();
-            fileHandler.writeFilePart(fileName, loopResponse.getDataBase64Array(), 0);
-            reconnect();
+            fileHandler.writeFilePart(fullFileName, loopResponse.getDataBase64Array(), i);
         }
+        disconnect();
+    }
+
+    private void disconnect() throws IOException{
+        outputStreamWriter.close();
+        socket.close();
     }
 
     private void reconnect(){
@@ -95,10 +89,13 @@ public class Client implements Runnable{
         }
     }
 
-    private void uploadFile(){
+    private void uploadFile() throws IOException{
         String shortFileName = new File(fileName).getName();
         long fileParts = fileHandler.calculateFileParts(new File(fileName));
         for (long i = 0; i < fileParts; i++){
+            if (socket.isClosed()){
+                reconnect();
+            }
             byte[] dataArray = fileHandler.loadFilePart(fileName, i);
             sendRequest(new Request(
                     RequestType.PUSH, null, i, fileParts, shortFileName, dataArray
@@ -107,8 +104,9 @@ public class Client implements Runnable{
             if (request.getRequestType() != RequestType.ACK){
                 break;
             }
-            reconnect();
+            socket.close();
         }
+        outputStreamWriter.close();
     }
 
     private String convertRequestToString(Request request){
@@ -122,7 +120,7 @@ public class Client implements Runnable{
 
     private void sendRequest(Request response){
         String jsonRequest = this.convertRequestToString(response);
-        System.out.println(jsonRequest);
+        System.out.println("CLIENT " + jsonRequest);
         try {
             outputStreamWriter = new BufferedOutputStream(socket.getOutputStream());
             outputStreamWriter.write(jsonRequest.getBytes(), 0, jsonRequest.getBytes().length);
@@ -147,10 +145,10 @@ public class Client implements Runnable{
         sendRequest(request);
         Request response = parseIncomingRequest();
         filesMap = response.getFilesMap();
-        outputStreamWriter.close();
+        disconnect();
     }
 
-    private boolean checkMD5(){
+    private void checkMD5() throws IOException{
         Request request = new Request(RequestType.MD5, fileName);
         try {
             request.setDataMD5(FileHandler.countMD5(fileName));
@@ -159,7 +157,7 @@ public class Client implements Runnable{
         }
         sendRequest(request);
         Request response = parseIncomingRequest();
-        return response.isValid();
+        disconnect();
     }
 
     private void parseGUICommand() throws IOException{
@@ -182,7 +180,6 @@ public class Client implements Runnable{
     @Override
     public void run() {
         try {
-            System.out.println(123);
             parseGUICommand();
         } catch (IOException e) {
             e.printStackTrace();

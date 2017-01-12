@@ -32,13 +32,11 @@ import java.util.stream.Collectors;
  * Created by krego on 29.12.2016.
  */
 public class ServerListController implements Initializable{
-    @FXML public Button newHostButton;
     @FXML public Button showFilesButton;
     @FXML public TextField portNumberInput;
     @FXML public Button start;
     @FXML public Label portLabel;
     private Host currentHost;
-    private Stage stage;
     private int appNumber;
 
     private void configureInputField(){
@@ -67,25 +65,6 @@ public class ServerListController implements Initializable{
         }
         return false;
     }
-
-//    private Host addHost(){
-//        if (validPortNumber()){
-//            try {
-//                Host host = new Host(
-//                        Integer.valueOf(portNumberInput.textProperty().get()),
-//                        Context.MAX_THREAD_POOL_SIZE_PER_HOST,
-//                        appNumber);
-//                Context.getInstance().addHost(host);
-//                return host;
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                throw new ServerCreatingError("Error while creating new server");
-//            }
-//        }else{
-//            showAlertError(AlertErrorConstants.ADD_HOST_ERR);
-//            return null;
-//        }
-//    }
 
     private FXMLLoader loadNewWindow(String fxmlName){
         try {
@@ -122,7 +101,6 @@ public class ServerListController implements Initializable{
         FXMLLoader loader = loadNewWindow("host.fxml");
         FilesListController controller = loader.<FilesListController>getController();
         controller.setHostPort(port);
-        controller.setStage(stage);
         controller.setDownloadPath(downloadPath);
     }
 

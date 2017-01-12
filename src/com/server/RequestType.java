@@ -8,7 +8,8 @@ public enum RequestType {
     MD5(2),
     PULL(3),
     PUSH(4),
-    ACK(5);
+    ACK(5),
+    HTML(6);
 
     private final int statusCode;
 

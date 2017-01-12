@@ -1,10 +1,5 @@
 package com.server;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -117,10 +112,16 @@ public class Host implements Runnable{
 
         void sendResponse(Request request) throws IOException {
             BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
-            String outRequest = parser.parseOutgoingRequest(request, filesMap);
-            System.out.println(outRequest);
-            out.write(outRequest.getBytes());
+            if(!(request.getRequestType() == RequestType.HTML)) {
+                String outRequest = parser.parseOutgoingRequest(request, filesMap);
+                System.out.println(outRequest);
+                out.write(outRequest.getBytes(), 0, outRequest.getBytes().length);
+            }else{
+                byte[] response = HTMLParser.createResponse();
+                out.write(response);
+            }
             out.flush();
+            out.close();
         }
 
         void handleAbortedConnection(Exception e){
@@ -132,6 +133,7 @@ public class Host implements Runnable{
             try {
                 Request request = parseRequest();
                 sendResponse(request);
+                socket.close();
             } catch (IOException | RequestParseException e) {
                 handleAbortedConnection(e);
             }

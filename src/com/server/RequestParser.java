@@ -1,8 +1,10 @@
 package com.server;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
@@ -16,7 +18,6 @@ class RequestParser {
     private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
     private ObjectMapper mapper;
     private HashMap<String, byte[]> filesMap;
-    private RequestValidator requestValidator;
     private FileHandler fileHandler;
 
     RequestParser(HashMap<String, byte[]> filesMap, File downloadPath){
@@ -24,20 +25,17 @@ class RequestParser {
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         this.filesMap = filesMap;
-        requestValidator = new RequestValidator(filesMap);
         this.fileHandler = new FileHandler(chunkSize, downloadPath);
     }
 
     Request parseIncomingRequest(InputStream inputStream)
             throws IOException, RequestParseException{
-        Request request = mapper.readValue(inputStream, Request.class);
-        validateRequest(request);
-        return request;
-    }
-
-    private void validateRequest(Request request){
-        if (request.getFileName() != null) {
-            requestValidator.validateRequest(request, filesMap, chunkSize);
+        try {
+            return mapper.readValue(inputStream, Request.class);
+        }catch (JsonParseException e) {
+            return new Request(RequestType.HTML);
+        }catch (JsonMappingException e){
+            throw new RequestParseException("Error parsing request");
         }
     }
 
@@ -64,14 +62,14 @@ class RequestParser {
                 response = new Request(RequestType.DIR, filesMap);
                 break;
             case MD5:
+                //TODO: naprawic
                 response = new Request(RequestType.MD5, request.getFileName());
-                response.setValid(requestValidator.checkMD5(request.getFileName(), request.getDataMD5()));
                 break;
             case PULL:
                 // ja czyli serwer wysylam
                 fileName = fileHandler.getFullFileName(request.getFileName());
                 System.out.println(fileName);
-                response = new Request(RequestType.PULL, request.getDataSequence(), fileName);
+                response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
                 response.setDataBase64Array(fileHandler.loadFilePart(fileName, request.getDataSequence()));
                 response.setMaxDataSequence(fileHandler.calculateFileParts(new File(fileName)));
                 break;

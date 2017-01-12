@@ -95,7 +95,7 @@ class FileHandler {
          MessageDigest md = MessageDigest.getInstance("MD5");
          InputStream inputStream = Files.newInputStream(Paths.get(file));
          DigestInputStream dis = new DigestInputStream(inputStream, md);
-         byte[] buf = new byte[1024];
+         byte[] buf = new byte[10240];
          int bytesRead;
          while ((bytesRead = dis.read(buf)) != -1){
             md.update(buf, 0, bytesRead);

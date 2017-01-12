@@ -74,23 +74,19 @@ public class FilesListController implements Initializable{
         tableView.setItems(FXCollections.observableArrayList(files.entrySet()));
     }
 
-    void setStage(Stage stage){
-        this.stage = stage;
-    }
-
     public void sendFile(ActionEvent actionEvent) throws InterruptedException{
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file to send");
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            executorService.execute(new Client(downloadPath, RequestType.PUSH, port, file.getPath()));
+            executorService.submit(new Client(downloadPath, RequestType.PUSH, port, file.getPath()));
         }
     }
 
     public void downloadFile(ActionEvent actionEvent) {
         if (tableView.getSelectionModel().getSelectedItem() != null){
             String fileName = tableView.getSelectionModel().getSelectedItem().getKey();
-            executorService.execute(new Client(downloadPath, RequestType.PULL, port, fileName));
+            executorService.submit(new Client(downloadPath, RequestType.PULL, port, fileName));
         }
     }
 
