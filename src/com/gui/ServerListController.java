@@ -1,32 +1,23 @@
 package com.gui;
 
-import com.server.Client;
-import com.server.Host;
-import com.server.RequestType;
-import com.server.ServerCreatingError;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.server.*;
+import com.server.Error;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.ConnectException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by krego on 29.12.2016.
@@ -39,31 +30,26 @@ public class ServerListController implements Initializable{
     private Host currentHost;
     private int appNumber;
 
-    private void configureInputField(){
-        addTextFieldValidation();
+    private String getIPAdress(String address){
+        int colonIndex = address.indexOf(":");
+        if (colonIndex != -1) {
+            return address.substring(0, colonIndex);
+        }
+        throw new Error("Error getting ip address");
     }
 
-    private void addTextFieldValidation(){
-        portNumberInput.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")){
-                portNumberInput.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
+    int getPort(String address){
+        int colonIndex = address.indexOf(":");
+        try {
+            return Integer.valueOf(address.substring(colonIndex+1));
+        }catch (NumberFormatException e){
+            showAlertError("Niepoprawny numer portu");
+            throw new Error("Error parsing port");
+        }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        configureInputField();
-    }
-
-    private boolean validPortNumber(){
-        if (!portNumberInput.getText().isEmpty()) {
-            int port = Integer.valueOf(portNumberInput.getText());
-            if (port > Host.MIN_PORT && port < Host.MAX_PORT) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private FXMLLoader loadNewWindow(String fxmlName){
@@ -97,47 +83,62 @@ public class ServerListController implements Initializable{
         thread.join();
     }
 
-    private void openFilesWindow(int port, File downloadPath) {
+    private void openFilesWindow(int port, File downloadPath, String address) {
         FXMLLoader loader = loadNewWindow("host.fxml");
         FilesListController controller = loader.<FilesListController>getController();
         controller.setHostPort(port);
         controller.setDownloadPath(downloadPath);
+        controller.setAddress(address);
     }
 
     public void showFiles(ActionEvent actionEvent) throws InterruptedException{
-        if (validPortNumber() && currentHost != null){
-            int portNumber = Integer.valueOf(portNumberInput.textProperty().get());
-            try {
-                Client client = new Client(RequestType.DIR, portNumber, currentHost.getDownloadPath());
-                startNewClient(client);
-                Context.getInstance().setCurrentFiles(client.filesMap);
-                openFilesWindow(portNumber, currentHost.getDownloadPath());
-            }catch (RuntimeException e){
-                showAlertError(AlertErrorConstants.NO_CONN);
+        if (portNumberInput.getText() != null || !(portNumberInput.getText().equals(""))) {
+            if (currentHost != null) {
+                int portNumber = getPort(portNumberInput.getText());
+                String address = getIPAdress(portNumberInput.getText());
+                try {
+                    Client client = new Client(RequestType.DIR, portNumber, address, currentHost.getDownloadPath());
+                    startNewClient(client);
+                    Context.getInstance().setCurrentFiles(client.filesMap);
+                    openFilesWindow(portNumber, currentHost.getDownloadPath(), address);
+                } catch (RuntimeException e) {
+                    showAlertError(AlertErrorConstants.NO_CONN);
+                }
+            } else {
+                showAlertError(AlertErrorConstants.SHOW_FILES_ERR);
             }
-        }else {
-            showAlertError(AlertErrorConstants.SHOW_FILES_ERR);
         }
     }
 
     public void startHost(ActionEvent actionEvent) {
-        if (currentHost == null && validPortNumber()) {
-            try {
-                currentHost = new Host(
-                        Integer.valueOf(portNumberInput.textProperty().get()),
-                        Context.MAX_THREAD_POOL_SIZE_PER_HOST,
-                        appNumber);
-                Context.getInstance().addHost(currentHost);
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new ServerCreatingError("Error while creating new server");
+        if (portNumberInput.getText() != null) {
+            if (currentHost == null) {
+                try {
+                    int port = Integer.valueOf(portNumberInput.getText());
+                    currentHost = new Host(
+                            port,
+                            Context.MAX_THREAD_POOL_SIZE_PER_HOST,
+                            appNumber);
+                    Context.getInstance().addHost(currentHost);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new ServerCreatingError("Error while creating new server");
+                } catch (NumberFormatException e){
+                    showAlertError("Nieprawidlowy port");
+                }
+                portNumberInput.setText("");
+                portLabel.setText("Działa: " + currentHost.portNumber);
+            } else {
+                showAlertError(AlertErrorConstants.NEW_HOST_ERR);
             }
-            portNumberInput.setText("");
-            portLabel.setText("Działa: " + currentHost.portNumber);
-        }else if(currentHost != null){
-            showAlertError(AlertErrorConstants.NEW_HOST_ERR);
-        }else if (!validPortNumber()){
-            showAlertError(AlertErrorConstants.ADD_HOST_ERR);
         }
+    }
+
+    public void closeWindow(ActionEvent actionEvent) throws InterruptedException{
+        Context.getInstance().getExecutor().shutdownNow();
+        if (!Context.getInstance().getExecutor().awaitTermination(100, TimeUnit.MICROSECONDS)) {
+            System.exit(0);
+        }
+        ((Node)(actionEvent.getSource())).getScene().getWindow().hide();
     }
 }

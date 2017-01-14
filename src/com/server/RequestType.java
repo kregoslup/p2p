@@ -5,11 +5,10 @@ package com.server;
  */
 public enum RequestType {
     DIR(1),
-    MD5(2),
-    PULL(3),
-    PUSH(4),
-    ACK(5),
-    HTML(6);
+    PULL(2),
+    PUSH(3),
+    ACK(4),
+    HTML(5);
 
     private final int statusCode;
 
@@ -21,8 +20,8 @@ public enum RequestType {
         return statusCode;
     }
 
-    public String getRequestTypeVerbose(RequestType type){
-        return type.name();
+    public String getRequestTypeVerbose(){
+        return name();
     }
 
     @Override

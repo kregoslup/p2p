@@ -26,30 +26,33 @@ public class Client implements Runnable{
     private static final int FILE_FIRST_PART = 0;
     private BufferedOutputStream outputStreamWriter;
     private File downloadPath;
+    private String address;
 
-    public Client(File downloadPath, RequestType clientActionType, int portNumber, String fileName){
+    public Client(File downloadPath, RequestType clientActionType, int portNumber, String address, String fileName){
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
         this.fileName = fileName;
         this.downloadPath = downloadPath;
+        this.address = address;
         configureMapper();
-        setUpSocket();
+        setUpSocket(address);
         addHandlers(downloadPath);
     }
 
-    public Client(RequestType clientActionType, int portNumber, File downloadPath){
+    public Client(RequestType clientActionType, int portNumber, String address, File downloadPath){
         this.clientActionType = clientActionType;
         this.portNumber = portNumber;
         this.downloadPath = downloadPath;
+        this.address = address;
         configureMapper();
-        setUpSocket();
+        setUpSocket(address);
     }
 
     private void logRequest(Request request){
         try {
             RequestsLogHandler
                     .getInstance()
-                    .logRequest(this.downloadPath, request.getRequestType().toString());
+                    .logRequest(this.downloadPath, "Client: " + request.getRequestType().getRequestTypeVerbose());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,9 +68,9 @@ public class Client implements Runnable{
         this.fileHandler = new FileHandler(downloadPath);
     }
 
-    private void setUpSocket(){
+    private void setUpSocket(String address){
         try {
-            socket = new Socket(InetAddress.getByName("localhost"), portNumber);
+            socket = new Socket(InetAddress.getByName(address), portNumber);
         } catch (IOException e) {
             throw new Error("Error setting up socket in client");
         }
@@ -98,7 +101,7 @@ public class Client implements Runnable{
     private void reconnect(){
         try {
             outputStreamWriter.close();
-            setUpSocket();
+            setUpSocket(address);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -165,18 +168,6 @@ public class Client implements Runnable{
         disconnect();
     }
 
-    private void checkMD5() throws IOException{
-        Request request = new Request(RequestType.MD5, fileName);
-        try {
-            request.setDataMD5(FileHandler.countMD5(fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        sendRequest(request);
-        Request response = parseIncomingRequest();
-        disconnect();
-    }
-
     private void parseGUICommand() throws IOException{
         switch(clientActionType){
             case DIR:
@@ -187,9 +178,6 @@ public class Client implements Runnable{
                 break;
             case PULL:
                 downloadFile();
-                break;
-            case MD5:
-                checkMD5();
                 break;
         }
     }

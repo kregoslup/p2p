@@ -1,5 +1,7 @@
 package com.server;
 
+import com.fasterxml.jackson.core.JsonParseException;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,8 +21,6 @@ public class Host implements Runnable{
     private HashMap<String, byte[]> filesMap;
     private int hostNumber;
     private boolean hostStatus = true;
-    public static final int MAX_PORT = 65535;
-    public static final int MIN_PORT = 49151;
 
     public Host(int portNumber, int threadPoolSize, int appNumber) throws IOException {
         this.portNumber = portNumber;
@@ -38,7 +38,7 @@ public class Host implements Runnable{
     }
 
     private void setDownloadPath(){
-        String defaultPath = new StringBuilder("C:\\TORRENT_").append(hostNumber).toString();
+        String defaultPath = new StringBuilder("D:\\TORrent_").append(hostNumber).toString();
         downloadPath = new File(defaultPath);
     }
 
@@ -80,6 +80,7 @@ public class Host implements Runnable{
     private void socketListeningLoop() throws IOException {
         while(hostStatus) {
             executorService.execute(new RequestHandler(serverSocket.accept(), this.filesMap, downloadPath));
+            discoverFiles(downloadPath);
         }
     }
 
@@ -89,6 +90,7 @@ public class Host implements Runnable{
             socketListeningLoop();
         } catch (IOException e) {
             e.printStackTrace();
+            abort();
         }
     }
 
@@ -96,11 +98,13 @@ public class Host implements Runnable{
         private final Socket socket;
         private RequestParser parser;
         private File downloadPath;
+        private HashMap<String, byte[]> filesMap;
 
         RequestHandler(Socket socket, HashMap<String, byte[]> filesMap, File downloadPath){
             this.socket = socket;
             this.downloadPath = downloadPath;
-            parser = new RequestParser(filesMap, downloadPath);
+            this.filesMap = filesMap;
+            parser = new RequestParser(downloadPath);
         }
 
         Request parseRequest() {
@@ -112,11 +116,12 @@ public class Host implements Runnable{
             }
         }
 
-        private void logRequest(String request){
+        private void logRequest(String request) throws IOException{
             try {
+                Request requestToLog = parser.getMapper().readValue(request, Request.class);
+                RequestsLogHandler.getInstance().logRequest(this.downloadPath, "Host: " + requestToLog.getRequestType().getRequestTypeVerbose());
+            } catch (JsonParseException e) {
                 RequestsLogHandler.getInstance().logRequest(this.downloadPath, request);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 
@@ -124,7 +129,7 @@ public class Host implements Runnable{
             try {
                 RequestsLogHandler
                         .getInstance()
-                        .logRequest(this.downloadPath, request.getRequestType().toString());
+                        .logRequest(this.downloadPath, "Host: " + request.getRequestType().getRequestTypeVerbose());
             } catch (IOException e) {
                 e.printStackTrace();
             }

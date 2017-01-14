@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -17,14 +16,12 @@ import java.util.HashMap;
 class RequestParser {
     private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
     private ObjectMapper mapper;
-    private HashMap<String, byte[]> filesMap;
     private FileHandler fileHandler;
 
-    RequestParser(HashMap<String, byte[]> filesMap, File downloadPath){
+    RequestParser(File downloadPath){
         mapper = new ObjectMapper();
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-        this.filesMap = filesMap;
         this.fileHandler = new FileHandler(chunkSize, downloadPath);
     }
 
@@ -39,13 +36,17 @@ class RequestParser {
         }
     }
 
+    ObjectMapper getMapper(){
+        return this.mapper;
+    }
+
     String parseOutgoingRequest(Request request,
                                 HashMap<String, byte[]> filesMap) throws RequestParseException{
         Request response = prepareResponseMethod(request, filesMap);
         return convertResponseToString(response);
     }
 
-    String convertResponseToString(Request response){
+    private String convertResponseToString(Request response){
         try {
             return mapper.writeValueAsString(response);
         } catch (JsonProcessingException e) {
@@ -61,14 +62,9 @@ class RequestParser {
             case DIR:
                 response = new Request(RequestType.DIR, filesMap);
                 break;
-            case MD5:
-                //TODO: naprawic
-                response = new Request(RequestType.MD5, request.getFileName());
-                break;
             case PULL:
                 // ja czyli serwer wysylam
                 fileName = fileHandler.getFullFileName(request.getFileName());
-                System.out.println(fileName);
                 response = new Request(RequestType.PULL, request.getDataSequence(), request.getFileName());
                 response.setDataBase64Array(fileHandler.loadFilePart(fileName, request.getDataSequence()));
                 response.setMaxDataSequence(fileHandler.calculateFileParts(new File(fileName)));

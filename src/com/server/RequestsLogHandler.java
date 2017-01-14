@@ -22,7 +22,7 @@ class RequestsLogHandler {
     }
 
     private String getCurrentTime(){
-        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date now = new Date();
         return sdfDate.format(now);
     }
@@ -36,6 +36,7 @@ class RequestsLogHandler {
             bufferedWriter = new BufferedWriter(fileWriter);
             bufferedWriter.write(getCurrentTime() + " " + request +'\n');
             bufferedWriter.flush();
+            bufferedWriter.close();
         } catch (IOException e){
             e.printStackTrace();
         }

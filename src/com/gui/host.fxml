@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -7,7 +10,7 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gui.FilesListController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gui.FilesListController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -17,6 +20,7 @@
                      <children>
                         <Button fx:id="sendButton" layoutX="14.0" layoutY="2.0" mnemonicParsing="false" onAction="#sendFile" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
                         <Button fx:id="downloadButton" layoutX="167.0" layoutY="2.0" mnemonicParsing="false" onAction="#downloadFile" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
+                        <Button layoutX="308.0" layoutY="6.0" mnemonicParsing="false" onAction="#closeWindow" prefHeight="43.0" prefWidth="82.0" text="Zamknij" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

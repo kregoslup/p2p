@@ -7,13 +7,8 @@ import java.nio.file.Paths;
  * Created by krego on 11.01.2017.
  */
 class HTMLParser {
-    private static final String HTML_RESPONSE_HEADER = "HTTP/1.1 200 OK\r\nServer: SKJ\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close";
+    private static final String HTML_RESPONSE_HEADER = "HTTP/1.1 200 OK\r\nServer: SKJ\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n";
     static String createResponse(InputStream inputStream, File downloadPath) throws IOException {
-//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-//        String request;
-//        while ((request = bufferedReader.readLine()) != null){
-//            request = bufferedReader.readLine();
-//        }
         return logToHtmlRequest(downloadPath);
     }
 

@@ -14,7 +14,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 import java.io.File;
 import java.net.URL;
@@ -37,6 +36,7 @@ public class FilesListController implements Initializable{
     private Stage stage;
     private final ExecutorService executorService = Executors.newFixedThreadPool(1);
     private File downloadPath;
+    private String address;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -54,6 +54,10 @@ public class FilesListController implements Initializable{
             filesMap.put(entry.getKey(), generateHexMD5(entry.getValue()));
         }
         files = FXCollections.observableMap(filesMap);
+    }
+
+    void setAddress(String address){
+        this.address = address;
     }
 
     private String generateHexMD5(byte[] md5){
@@ -79,18 +83,23 @@ public class FilesListController implements Initializable{
         fileChooser.setTitle("Choose file to send");
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            executorService.submit(new Client(downloadPath, RequestType.PUSH, port, file.getPath()));
+            executorService.submit(new Client(downloadPath, RequestType.PUSH, port, address, file.getPath()));
         }
     }
 
     public void downloadFile(ActionEvent actionEvent) {
         if (tableView.getSelectionModel().getSelectedItem() != null){
             String fileName = tableView.getSelectionModel().getSelectedItem().getKey();
-            executorService.submit(new Client(downloadPath, RequestType.PULL, port, fileName));
+            executorService.submit(new Client(downloadPath, RequestType.PULL, port, address, fileName));
         }
     }
 
     void setDownloadPath(File downloadPath) {
         this.downloadPath = downloadPath;
+    }
+
+    public void closeWindow(ActionEvent actionEvent) {
+        executorService.shutdown();
+        ((Node)(actionEvent.getSource())).getScene().getWindow().hide();
     }
 }
