@@ -72,7 +72,7 @@ public class Host implements Runnable{
         return downloadPath;
     }
 
-    public void abort(){
+    void abort(){
         hostStatus = false;
         executorService.shutdown();
     }
