@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -10,17 +7,18 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gui.FilesListController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="Pliki hosta" xmlns="http://javafx.com/javafx/8.0.112-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gui.FilesListController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
-            <SplitPane dividerPositions="0.16156462585034015" layoutX="201.0" layoutY="43.0" orientation="VERTICAL" prefHeight="374.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane dividerPositions="0.16156462585034015" layoutX="18.6" layoutY="19.6" orientation="VERTICAL" prefHeight="357.0" prefWidth="579.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="9.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
                         <Button fx:id="sendButton" layoutX="14.0" layoutY="2.0" mnemonicParsing="false" onAction="#sendFile" prefHeight="51.0" prefWidth="114.0" text="Wyslij plik" />
                         <Button fx:id="downloadButton" layoutX="167.0" layoutY="2.0" mnemonicParsing="false" onAction="#downloadFile" prefHeight="51.0" prefWidth="104.0" text="Ściągnij plik" />
                         <Button layoutX="308.0" layoutY="6.0" mnemonicParsing="false" onAction="#closeWindow" prefHeight="43.0" prefWidth="82.0" text="Zamknij" />
+                        <Button layoutX="415.0" layoutY="9.0" mnemonicParsing="false" onAction="#pauseAction" prefHeight="38.0" prefWidth="103.0" text="Pauza" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

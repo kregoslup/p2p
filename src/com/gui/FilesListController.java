@@ -102,4 +102,8 @@ public class FilesListController implements Initializable{
         executorService.shutdown();
         ((Node)(actionEvent.getSource())).getScene().getWindow().hide();
     }
+
+    public void pauseAction(ActionEvent actionEvent) {
+        
+    }
 }
