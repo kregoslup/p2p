@@ -1,0 +1,1 @@
+start java -cp ".;lib/jackson-annotations-2.8.0.jar;lib/jackson-core-2.8.1.jar;lib/jackson-databind-2.8.5.jar;bin" com.gui.gui %1
