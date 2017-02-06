@@ -1,4 +1,6 @@
-package com.server;
+package com.request;
+
+import com.request.RequestsLogHandler;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -6,9 +8,9 @@ import java.nio.file.Paths;
 /**
  * Created by krego on 11.01.2017.
  */
-class HTMLParser {
+public class HTMLParser {
     private static final String HTML_RESPONSE_HEADER = "HTTP/1.1 200 OK\r\nServer: SKJ\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n";
-    static String createResponse(InputStream inputStream, File downloadPath) throws IOException {
+    public static String createResponse(InputStream inputStream, File downloadPath) throws IOException {
         return logToHtmlRequest(downloadPath);
     }
 

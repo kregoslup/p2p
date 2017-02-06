@@ -1,15 +1,19 @@
-package com.server;
+package com.client;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.request.Request;
+import com.request.RequestParseException;
+import com.request.RequestType;
+import com.request.RequestsLogHandler;
+import com.server.*;
+import com.server.Error;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -72,7 +76,7 @@ public class Client implements Runnable{
         try {
             socket = new Socket(InetAddress.getByName(address), portNumber);
         } catch (IOException e) {
-            throw new Error("Error setting up socket in client");
+            throw new com.server.Error("Error setting up socket in client");
         }
     }
 

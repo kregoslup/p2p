@@ -1,5 +1,7 @@
 package com.gui;
 
+import com.client.Client;
+import com.request.RequestType;
 import com.server.*;
 import com.server.Error;
 import javafx.fxml.FXML;

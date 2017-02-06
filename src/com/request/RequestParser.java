@@ -1,4 +1,4 @@
-package com.server;
+package com.request;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.server.FileHandler;
 
 import java.io.*;
 import java.util.HashMap;
@@ -13,19 +14,19 @@ import java.util.HashMap;
 /**
  * Created by krego on 07.11.2016.
  */
-class RequestParser {
+public class RequestParser {
     private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
     private ObjectMapper mapper;
     private FileHandler fileHandler;
 
-    RequestParser(File downloadPath){
+    public RequestParser(File downloadPath){
         mapper = new ObjectMapper();
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         this.fileHandler = new FileHandler(chunkSize, downloadPath);
     }
 
-    Request parseIncomingRequest(InputStream inputStream)
+    public Request parseIncomingRequest(InputStream inputStream)
             throws IOException, RequestParseException{
         try {
             return mapper.readValue(inputStream, Request.class);
@@ -36,12 +37,12 @@ class RequestParser {
         }
     }
 
-    ObjectMapper getMapper(){
+    public ObjectMapper getMapper(){
         return this.mapper;
     }
 
-    String parseOutgoingRequest(Request request,
-                                HashMap<String, byte[]> filesMap) throws RequestParseException{
+    public String parseOutgoingRequest(Request request,
+                                       HashMap<String, byte[]> filesMap) throws RequestParseException{
         Request response = prepareResponseMethod(request, filesMap);
         return convertResponseToString(response);
     }

@@ -1,7 +1,6 @@
-package com.server;
+package com.request;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,7 +8,7 @@ import java.util.Date;
 /**
  * Created by krego on 12.01.2017.
  */
-class RequestsLogHandler {
+public class RequestsLogHandler {
     private static final RequestsLogHandler handler = new RequestsLogHandler();
     private static final String LOG_FILE_NAME = "Log.txt";
 
@@ -17,7 +16,7 @@ class RequestsLogHandler {
         return handler;
     }
 
-    public String getLogFileName(){
+    String getLogFileName(){
         return LOG_FILE_NAME;
     }
 
@@ -27,7 +26,7 @@ class RequestsLogHandler {
         return sdfDate.format(now);
     }
 
-    synchronized void logRequest(File downloadPath, String request) throws IOException {
+    public synchronized void logRequest(File downloadPath, String request) throws IOException {
         File logFile = new File(Paths.get(downloadPath.toString(), LOG_FILE_NAME).toString());
         boolean created = logFile.createNewFile();
         BufferedWriter bufferedWriter;

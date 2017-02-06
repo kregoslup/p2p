@@ -1,5 +1,7 @@
 package com.server;
 
+import com.request.RequestConfig;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,23 +12,23 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Created by krego on 27.12.2016.
  */
-class FileHandler {
+public class FileHandler {
    private static final String WRITE = "rw";
    private static final String READ = "r";
    private int chunkSize;
    private File downloadPath;
 
-   FileHandler(int chunkSize, File downloadPath){
+   public FileHandler(int chunkSize, File downloadPath){
       this.chunkSize = chunkSize;
       this.downloadPath = downloadPath;
    }
 
-   FileHandler(File downloadPath) {
+   public FileHandler(File downloadPath) {
       chunkSize = RequestConfig.getInstance().getChunkSize();
       this.downloadPath = downloadPath;
    }
 
-   void writeFilePart(String fileName, byte[] filePart, long partNumber){
+   public void writeFilePart(String fileName, byte[] filePart, long partNumber){
       System.out.print(fileName);
       RandomAccessFile randomAccessFile;
       try {
@@ -46,7 +48,7 @@ class FileHandler {
       }
    }
 
-   String getFullFileName(String fileName){
+   public String getFullFileName(String fileName){
       return Paths.get(downloadPath.toString(), fileName).toString();
    }
 
@@ -54,7 +56,7 @@ class FileHandler {
       return partNumber * chunkSize;
    }
 
-   byte[] loadFilePart(String fileName, long partNumber){
+   public byte[] loadFilePart(String fileName, long partNumber){
       RandomAccessFile randomAccessFile;
       try {
          randomAccessFile = new RandomAccessFile(fileName, READ);
@@ -85,7 +87,7 @@ class FileHandler {
         return (int)(fileLength - offset);
    }
 
-   long calculateFileParts(File file){
+   public long calculateFileParts(File file){
       long length = file.length();
       return (length / chunkSize) + 1;
    }

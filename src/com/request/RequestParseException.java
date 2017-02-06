@@ -1,4 +1,4 @@
-package com.server;
+package com.request;
 
 /**
  * Created by krego on 26.12.2016.

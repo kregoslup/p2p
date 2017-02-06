@@ -1,15 +1,14 @@
-package com.server;
+package com.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
-import java.util.HashMap;
 
 /**
  * Created by krego on 05.11.2016.
  */
-class Request {
+public class Request {
     private RequestType requestType;
     private HashMap<String, byte[]> filesMap = null;
     private byte[] dataBase64Array = null;
@@ -19,7 +18,7 @@ class Request {
     private byte[] dataMD5 = null;
     private boolean valid = true;
 
-    Request(RequestType requestType){
+    public Request(RequestType requestType){
         this.requestType = requestType;
     }
 
@@ -33,19 +32,19 @@ class Request {
         this.fileName = fileName;
     }
 
-    Request(RequestType requestType, long dataSequence, String fileName){
+    public Request(RequestType requestType, long dataSequence, String fileName){
         this.requestType = requestType;
         this.dataSequence = dataSequence;
         this.fileName = fileName;
     }
 
     @JsonCreator
-    Request(@JsonProperty("requestType") RequestType requestType,
-            @JsonProperty("filesMap") HashMap<String, byte[]> filesMap,
-            @JsonProperty("dataSequence") long dataSequence,
-            @JsonProperty("maxDataSequence") long maxDataSequence,
-            @JsonProperty("fileName") String fileName,
-            @JsonProperty("dataBase64Array") byte[] dataBase64Array){
+    public Request(@JsonProperty("requestType") RequestType requestType,
+                   @JsonProperty("filesMap") HashMap<String, byte[]> filesMap,
+                   @JsonProperty("dataSequence") long dataSequence,
+                   @JsonProperty("maxDataSequence") long maxDataSequence,
+                   @JsonProperty("fileName") String fileName,
+                   @JsonProperty("dataBase64Array") byte[] dataBase64Array){
         this.requestType = requestType;
         this.dataSequence = dataSequence;
         this.fileName = fileName;

@@ -1,7 +1,7 @@
 package com.gui;
 
-import com.server.Client;
-import com.server.RequestType;
+import com.client.Client;
+import com.request.RequestType;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
