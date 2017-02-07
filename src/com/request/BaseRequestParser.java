@@ -14,12 +14,12 @@ import java.io.InputStream;
 /**
  * Created by krego on 06.02.2017.
  */
-public class BaseRequestParser {
+abstract class BaseRequestParser implements ResponseParser{
     private static final int chunkSize = RequestConfig.getInstance().getChunkSize();
-    private ObjectMapper mapper;
-    private FileHandler fileHandler;
+    ObjectMapper mapper;
+    FileHandler fileHandler;
 
-    public BaseRequestParser(File downloadPath){
+    BaseRequestParser(File downloadPath){
         mapper = new ObjectMapper();
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
@@ -36,4 +36,9 @@ public class BaseRequestParser {
             throw new RequestParseException("Error parsing request");
         }
     }
+
+    public ObjectMapper getMapper(){
+        return this.mapper;
+    }
+
 }
